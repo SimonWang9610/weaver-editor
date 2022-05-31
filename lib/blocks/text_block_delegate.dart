@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/interfaces/format_node.dart';
-import 'package:weaver_editor/interfaces/toolbar_attach_delegate.dart';
-import 'block_editing_controller.dart';
-import 'node_pair.dart';
+import 'package:weaver_editor/blocks/content_block.dart';
+import 'package:weaver_editor/models/format_node.dart';
+import 'package:weaver_editor/toolbar/toolbar_attach_delegate.dart';
+import '../widgets/block_editing_controller.dart';
+import '../models/node_pair.dart';
 
-mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
+mixin LeafTextBlockOperationDelegate<T extends ContentBlock>
+    on EditorToolbarDelegate<T> {
   FormatNode get headNode;
   set headNode(FormatNode newNode);
 
@@ -18,6 +20,8 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
     BlockEditingSelection selection, {
     TextStyle? composedStyle,
   }) {
+    if (attachedToolbar == null) return false;
+
     print('^^^^^^^^^^^^^^^update format nodes^^^^^^^^^^^^^^^^');
     final pair = findNodesBySelection(selection);
 

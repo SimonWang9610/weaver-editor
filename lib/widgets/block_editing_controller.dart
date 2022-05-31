@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/interfaces/editor_toolbar.dart';
-import 'package:weaver_editor/interfaces/leaf_text_block.dart';
+import 'package:weaver_editor/toolbar/editor_toolbar.dart';
+import 'package:weaver_editor/blocks/leaf_text_block.dart';
 
 class BlockEditingController extends TextEditingController
     with BlockEditingCompare {
@@ -53,6 +53,12 @@ class BlockEditingController extends TextEditingController
   void mayApplyStyle() {
     if (!selection.isCollapsed) {
       value = value.copyWith();
+    }
+  }
+
+  void unfocus() {
+    if (_block.focus.hasFocus) {
+      _block.focus.unfocus();
     }
   }
 }

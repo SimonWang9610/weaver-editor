@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/interfaces/editor.dart';
-import 'package:weaver_editor/interfaces/editor_toolbar.dart';
+import 'package:weaver_editor/widgets/editor.dart';
+import 'package:weaver_editor/toolbar/editor_toolbar.dart';
 
 void main() {
   runApp(const MyApp());

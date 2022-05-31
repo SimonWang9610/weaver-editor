@@ -1,10 +1,11 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:nanoid/nanoid.dart';
 
-import 'package:weaver_editor/interfaces/content_block.dart';
-import 'package:weaver_editor/interfaces/editor_toolbar.dart';
+import 'package:weaver_editor/blocks/content_block.dart';
+import 'package:weaver_editor/toolbar/editor_toolbar.dart';
 import 'block_editing_controller.dart';
-import 'leaf_text_block.dart';
+import '../blocks/leaf_text_block.dart';
 
 class WeaverEditor extends StatefulWidget {
   final EditorToolbar toolbar;
@@ -39,6 +40,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
 
   @override
   void dispose() {
+    widget.toolbar.dispose();
     provider.removeListener(_handleBlockChange);
     super.dispose();
   }
@@ -57,14 +59,9 @@ class _WeaverEditorState extends State<WeaverEditor> {
           ),
           child: Column(
             children: [
-              const BlockCreator(index: -1),
               Expanded(
-                child: ListView.separated(
-                  itemCount: _blocks.length,
-                  itemBuilder: (_, index) => _blocks[index],
-                  separatorBuilder: (_, index) => BlockCreator(
-                    index: index,
-                  ),
+                child: ListView(
+                  children: _interleaveBlock(),
                 ),
               ),
               EditorToolbarWidget(
@@ -75,6 +72,18 @@ class _WeaverEditorState extends State<WeaverEditor> {
         ),
       ),
     );
+  }
+
+  List<Widget> _interleaveBlock() {
+    final List<Widget> widgets = [const BlockCreator(index: 0)];
+
+    if (_blocks.isEmpty) return widgets;
+
+    for (int i = 0; i < _blocks.length; i++) {
+      widgets.addAll([_blocks[i], BlockCreator(index: i + 1)]);
+    }
+
+    return widgets;
   }
 }
 
@@ -87,9 +96,10 @@ class BlockCreator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('block creator: $index');
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(vertical: 2),
         child: IconButton(
           onPressed: () {
             final blockProvider = EditorBlockProvider.of(context);
@@ -105,11 +115,20 @@ class BlockCreator extends StatelessWidget {
 
 class EditorBlockProvider with ChangeNotifier {
   final List<ContentBlock> blocks;
-
   final EditorToolbar toolbar;
 
   EditorBlockProvider(this.toolbar, {List<ContentBlock>? initBlocks})
       : blocks = initBlocks ?? [];
+
+  static EditorBlockProvider of(BuildContext context) {
+    final editor = context.findAncestorStateOfType<_WeaverEditorState>();
+
+    if (editor == null) {
+      throw ErrorDescription('No Editor Found');
+    }
+
+    return editor.provider;
+  }
 
   EditorToolbar attachContentBlock(BlockEditingController controller) {
     return toolbar.attach(controller);
@@ -120,7 +139,6 @@ class EditorBlockProvider with ChangeNotifier {
   }
 
   void insertContentBlock(ContentBlockType type, [int? pos]) {
-    print('creating content block');
     late final block;
     final String id = nanoid(5);
 
@@ -136,14 +154,11 @@ class EditorBlockProvider with ChangeNotifier {
         throw UnimplementedError('Unsupported $type block');
     }
 
-    // TODO: should auto unfocus before inserting a new block
-
     if (pos != null && pos >= 0) {
-      block.insert(pos, block);
+      blocks.insert(pos, block);
     } else {
       blocks.add(block);
     }
-    print('blocks: ${blocks.length}');
 
     notifyListeners();
   }
@@ -152,16 +167,6 @@ class EditorBlockProvider with ChangeNotifier {
     final block = blocks.removeAt(src);
     blocks.insert(dst, block);
     notifyListeners();
-  }
-
-  static EditorBlockProvider of(BuildContext context) {
-    final editor = context.findAncestorStateOfType<_WeaverEditorState>();
-
-    if (editor == null) {
-      throw ErrorDescription('No Editor Found');
-    }
-
-    return editor.provider;
   }
 }
 

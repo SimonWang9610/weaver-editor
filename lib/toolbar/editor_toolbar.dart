@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/interfaces/block_editing_controller.dart';
+import '../widgets/block_editing_controller.dart';
+import 'buttons/text_style_buttons.dart';
 
 class EditorToolbar with ChangeNotifier {
   TextStyle _historyStyle;
   TextStyle _style;
   TextAlign _align;
+  bool _shouldApplyStyle = false;
 
   EditorToolbar(TextStyle style, {TextAlign? align})
       : _style = style,
@@ -17,6 +19,8 @@ class EditorToolbar with ChangeNotifier {
       print('@@@@formatting text by toolbar');
       _historyStyle = _style;
       _style = value;
+      _shouldApplyStyle = true;
+
       notifyListeners();
     }
   }
@@ -25,36 +29,25 @@ class EditorToolbar with ChangeNotifier {
   set align(TextAlign value) {
     if (_align != value) {
       _align = value;
+      _shouldApplyStyle = false;
       notifyListeners();
     }
   }
 
-  // only when set cursor manually or delete text
-  // we need to synchronize style with the format node
-  // once we complete select/insert operation
-  // we must reset [needSynchronized] to false
-  // because the two operations always make tool bar synchronized with node
+  void synchronize(TextStyle value) {
+    print('synchronizing tool bal style..........');
+
+    if (synchronized && _style == value) return;
+
+    _historyStyle = value;
+    _style = value;
+    _shouldApplyStyle = true;
+    // will re-build EditorToolbarWidget
+    // to follow the style of the focused FormatNode
+    notifyListeners();
+  }
+
   bool get synchronized => _historyStyle == _style;
-
-  BlockEditingController? _attachedController;
-
-  EditorToolbar attach(BlockEditingController controller) {
-    // should detach bound controller before attaching new controller
-
-    if (_attachedController == controller) return this;
-
-    detach();
-    _attachedController = controller;
-
-    addListener(_applyStyleByController);
-
-    return this;
-  }
-
-  void detach() {
-    removeListener(_applyStyleByController);
-    _attachedController = null;
-  }
 
   void boldText() {
     if (style.fontWeight == FontWeight.w900) {
@@ -82,20 +75,33 @@ class EditorToolbar with ChangeNotifier {
     }
   }
 
-  void _applyStyleByController() {
-    _attachedController?.mayApplyStyle();
+  BlockEditingController? _attachedController;
+
+  EditorToolbar attach(BlockEditingController controller) {
+    // should detach bound controller before attaching new controller
+
+    if (_attachedController == controller) return this;
+
+    detach();
+    _attachedController = controller;
+
+    addListener(_applyStyleByController);
+
+    return this;
   }
 
-  void synchronize(TextStyle value) {
-    print('synchronizing tool bal style..........');
+  void detach() {
+    removeListener(_applyStyleByController);
 
-    if (synchronized && _style == value) return;
+    _attachedController?.unfocus();
 
-    _historyStyle = value;
-    _style = value;
-    // will re-build EditorToolbarWidget
-    // to follow the style of the focused FormatNode
-    notifyListeners();
+    _attachedController = null;
+  }
+
+  void _applyStyleByController() {
+    if (_shouldApplyStyle) {
+      _attachedController?.mayApplyStyle();
+    }
   }
 }
 
@@ -176,71 +182,5 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
   void _handleToolbarStyleChange() {
     _currentStyle = widget.toolbar.style;
     setState(() {});
-  }
-}
-
-class FormatBoldButton extends StatelessWidget {
-  final Color? backgroundColor;
-  final VoidCallback? onPressed;
-  const FormatBoldButton({
-    Key? key,
-    this.backgroundColor,
-    this.onPressed,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      style: TextButton.styleFrom(
-        backgroundColor: backgroundColor,
-        shape: const RoundedRectangleBorder(),
-      ),
-      onPressed: onPressed,
-      child: const Icon(Icons.format_bold_outlined),
-    );
-  }
-}
-
-class FormatItalicButton extends StatelessWidget {
-  final Color? backgroundColor;
-  final VoidCallback? onPressed;
-  const FormatItalicButton({
-    Key? key,
-    this.backgroundColor,
-    this.onPressed,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      style: TextButton.styleFrom(
-        backgroundColor: backgroundColor,
-        shape: const RoundedRectangleBorder(),
-      ),
-      onPressed: onPressed,
-      child: const Icon(Icons.format_italic_outlined),
-    );
-  }
-}
-
-class FormatUnderlineButton extends StatelessWidget {
-  final Color? backgroundColor;
-  final VoidCallback? onPressed;
-  const FormatUnderlineButton({
-    Key? key,
-    this.backgroundColor,
-    this.onPressed,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      style: TextButton.styleFrom(
-        backgroundColor: backgroundColor,
-        shape: const RoundedRectangleBorder(),
-      ),
-      onPressed: onPressed,
-      child: const Icon(Icons.format_underline_outlined),
-    );
   }
 }

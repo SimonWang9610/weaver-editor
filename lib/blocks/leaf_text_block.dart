@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/interfaces/block_editing_controller.dart';
-import 'package:weaver_editor/interfaces/editor.dart';
-import 'package:weaver_editor/interfaces/format_node.dart';
-import 'package:weaver_editor/interfaces/leaf_text_block_mixin.dart';
-import 'package:weaver_editor/interfaces/toolbar_attach_delegate.dart';
+import '../widgets/block_editing_controller.dart';
+import '../widgets/editor.dart';
+import '../models/format_node.dart';
+import 'text_block_delegate.dart';
+import '../toolbar/toolbar_attach_delegate.dart';
 import 'content_block.dart';
 
 class LeafTextBlock extends ContentBlock {
@@ -23,6 +23,7 @@ class LeafTextBlock extends ContentBlock {
 class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
     with EditorToolbarDelegate, LeafTextBlockOperationDelegate {
   late final BlockEditingController controller;
+
   final FocusNode focus = FocusNode();
   late FormatNode _node;
 
@@ -57,7 +58,6 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
   @override
   void dispose() {
     focus.removeListener(handleFocusChange);
-
     controller.dispose();
     focus.dispose();
     _node.dispose();
@@ -70,11 +70,12 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
 
     if (focus.hasFocus) {
       attachedToolbar = blockProvider.attachContentBlock(controller);
+      print('toolbar has attached to block: ${widget.key}');
     } else {
       blockProvider.detachContentBlock();
       attachedToolbar = null;
+      print('toolbar has been detached from ${widget.key}');
     }
-    print('toolbar has attached to block');
   }
 
   @override
@@ -82,23 +83,15 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
     print('build text block: ${widget.key}');
 
     return TextField(
-      // selectionControls: CustomSelectionControls(controller),
       strutStyle: strut,
       style: widget.style,
+      textAlign: align ?? TextAlign.start,
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
       ),
       controller: controller,
       focusNode: focus,
       maxLines: null,
-      // onTap: () {
-      //   print('mark cursor moving');
-      //   attachedToolbar?.needSynchronized = true;
-      // },
-      onEditingComplete: () {
-        focus.unfocus();
-        // TODO: should create new ContentBblock inside of ContainerBlock
-      },
     );
   }
 }

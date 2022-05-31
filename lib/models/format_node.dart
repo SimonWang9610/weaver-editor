@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'block_range.dart';
-import 'block_editing_controller.dart';
+import '../widgets/block_editing_controller.dart';
 import 'node_pair.dart';
 
 class FormatNode {
