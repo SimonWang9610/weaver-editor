@@ -9,14 +9,14 @@ class FormatNode {
   FormatNode? next;
 
   late NodeRange range;
-  TextStyle? style;
+  TextStyle style;
 
   FormatNode({
     required TextSelection selection,
-    this.style,
+    required this.style,
   }) : range = NodeRange.fromSelection(selection);
 
-  factory FormatNode.position(int start, int end, {TextStyle? style}) {
+  factory FormatNode.position(int start, int end, {required TextStyle style}) {
     final selection = TextSelection(baseOffset: start, extentOffset: end);
     return FormatNode(selection: selection, style: style);
   }
@@ -33,7 +33,6 @@ class FormatNode {
   void unlink() {
     previous = null;
     next = null;
-    style = null;
   }
 
   void dispose() {
@@ -43,7 +42,7 @@ class FormatNode {
     next = null;
   }
 
-  void merge(FormatNode startNode, FormatNode endNode) {
+  void fuse(FormatNode startNode, FormatNode endNode) {
     // merge always starts from head to trail
     // no need to propagate to its previous node
     // set null to avoid memory leak
@@ -53,12 +52,13 @@ class FormatNode {
     }
 
     if (this != endNode) {
-      next?.merge(startNode, endNode);
+      next?.fuse(startNode, endNode);
       next = null;
     }
   }
 
   void translateTo(int baseOffset) {
+    print('translate from ${range.start} to $baseOffset');
     range = range.translateTo(baseOffset);
 
     next?.translateTo(range.end);
@@ -73,18 +73,42 @@ class FormatNode {
   int get hashCode => range.hashCode;
 
   void findNodePair(BlockEditingSelection selection, NodePair pair) {
-    if (range.contains(selection.latest.baseOffset)) {
-      pair.head = this;
-    }
+    if (selection.status == BlockEditingStatus.init) {
+      range = NodeRange.fromSelection(selection.latest);
 
-    if (range.contains(selection.latest.extentOffset)) {
+      pair.head = this;
       pair.trail = this;
+
       pair.markAsPaired();
+    } else {
+      print('old selection: ${selection.old}');
+      print('latest selection: ${selection.latest}');
+      print('delta: ${selection.delta}');
+
+      if (range.contains(selection.old.baseOffset)) {
+        pair.head = this;
+      }
+
+      if (range.contains(selection.old.extentOffset)) {
+        pair.trail = this;
+        pair.markAsPaired();
+      }
     }
 
     if (pair.isPaired()) return;
 
-    next?.findNodePair(selection, pair);
+    // if next is null
+    // the cursor is at the end of the paragraph
+    if (next != null) {
+      next?.findNodePair(selection, pair);
+    } else {
+      range = range.rerangeTo(
+        baseOffset: range.start,
+        extentOffset: selection.latest.extentOffset,
+      );
+      pair.trail = this;
+      pair.markAsPaired();
+    }
   }
 
   FormatNode? nodeContainsSpot(int spot) {
@@ -95,24 +119,34 @@ class FormatNode {
     }
   }
 
-  void chainNext(FormatNode? other) {
+  FormatNode chainNext(FormatNode other) {
+    print('chained: $range -> ${other.range}');
     // if two nodes have same styles, merge them instead of chaining them
-    if (other != null && style == other.style) {
-      range = range + other.range;
+
+    if (next == null) {
+      if (style == other.style) {
+        range = range + other.range;
+        next = other.next;
+        other.unlink();
+        return this;
+      } else {
+        next = other;
+        other.previous = this;
+        return other;
+      }
     } else {
-      next = other;
-      other?.previous = this;
+      return next!.chainNext(other);
     }
   }
 
   TextSpan build(String content) {
-    final text = content.characters.getRange(range.start + 1, range.end).string;
+    final text = content.characters.getRange(range.start, range.end).string;
 
     final chainedSpan = next?.build(content);
 
     return TextSpan(
       style: style,
-      text: text,
+      text: text.isEmpty ? null : text,
       children: [
         if (chainedSpan != null) chainedSpan,
       ],

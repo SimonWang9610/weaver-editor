@@ -16,11 +16,13 @@ class NodePair {
   bool isPaired() => _paired;
   bool isMerged() => _merged;
 
-  void merge() {
+  void fuse() {
+    print('fusing pair....');
     if (_merged) return;
 
-    head.merge(head, trail);
+    head.fuse(head, trail);
     _merged = true;
+    print('pair merged: (${head.range} <--> ${trail.range}');
   }
 
   void unpair() {

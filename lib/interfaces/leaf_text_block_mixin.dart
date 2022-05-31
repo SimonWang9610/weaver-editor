@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/interfaces/format_node.dart';
+import 'package:weaver_editor/interfaces/toolbar_attach_delegate.dart';
 import 'block_editing_controller.dart';
 import 'node_pair.dart';
 
-mixin LeafTextBlockOperationDelegate {
+mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
   FormatNode get headNode;
   set headNode(FormatNode newNode);
 
@@ -17,108 +18,178 @@ mixin LeafTextBlockOperationDelegate {
     BlockEditingSelection selection, {
     TextStyle? composedStyle,
   }) {
+    print('^^^^^^^^^^^^^^^update format nodes^^^^^^^^^^^^^^^^');
     final pair = findNodesBySelection(selection);
 
+    print('found pair: ${pair.head.range} <--> ${pair.trail.range}');
+    print(' status: ${selection.status}');
     assert(pair.isPaired(), 'operation must be on a paired path');
 
     switch (selection.status) {
       case BlockEditingStatus.select:
-        mayUpdateStyleBySelection(
+        updateBySelection(
           selection,
           pair,
           composedStyle: composedStyle,
         );
         break;
       case BlockEditingStatus.delete:
-        mergeDeletedNodes(selection, pair);
+        deleteBySelection(selection, pair);
         break;
       case BlockEditingStatus.insert:
-        maySplitNodeBySelection(
+        insertBySelection(
           selection,
           pair,
           composedStyle: composedStyle,
         );
         break;
+      case BlockEditingStatus.init:
+        break;
     }
 
     pair.unpair();
+    print('^^^^^^^^^^^^end^^^^^^^^^^^^^^^^^^');
 
     return pair.isMerged();
   }
 
-  void mayUpdateStyleBySelection(
+  void updateBySelection(
     BlockEditingSelection selection,
     NodePair pair, {
     TextStyle? composedStyle,
   }) {
-    if (composedStyle != null && !selection.latest.isCollapsed) {
-      final middleHalf =
-          FormatNode(selection: selection.latest, style: composedStyle);
+    late final TextStyle activeStyle;
 
-      _handleOperation(selection, pair, middle: middleHalf);
+    if (selection.latest.isCollapsed && !attachedToolbar!.formatting) {
+      activeStyle = pair.head.style;
+
+      if (!attachedToolbar!.synchronized) {
+        // keep toolbar style same as the focused FormatNode
+        attachedToolbar?.synchronize(activeStyle);
+      }
+    } else {
+      activeStyle = attachedToolbar!.style;
+    }
+
+    if (activeStyle != pair.head.style) {
+      _handleOperation(
+        selection,
+        pair,
+        style: activeStyle,
+      );
     }
   }
 
-  void mergeDeletedNodes(BlockEditingSelection selection, NodePair pair) {
+  void deleteBySelection(BlockEditingSelection selection, NodePair pair) {
     assert(selection.latest.isCollapsed);
-    assert(pair.isPaired(), 'operation must be on a paired path');
 
     pair.trail = pair.trail.nodeContainsSpot(selection.old.extentOffset)!;
 
-    _handleOperation(selection, pair);
+    _handleOperation(
+      selection,
+      pair,
+    );
+
+    if (attachedToolbar!.style != pair.head.style) {
+      attachedToolbar?.synchronize(pair.head.style);
+    }
   }
 
-  void maySplitNodeBySelection(
+  void insertBySelection(
     BlockEditingSelection selection,
     NodePair pair, {
     TextStyle? composedStyle,
   }) {
+    print('inserting text');
     pair.head = pair.head.nodeContainsSpot(selection.old.baseOffset)!;
 
-    final middleHalf = FormatNode(
-      selection: selection.latest,
-      style: composedStyle ?? pair.head.style,
+    _handleOperation(
+      selection,
+      pair,
+      style: attachedToolbar!.style,
     );
-
-    _handleOperation(selection, pair, middle: middleHalf);
   }
 
   void _handleOperation(
     BlockEditingSelection selection,
     NodePair pair, {
-    FormatNode? middle,
+    TextStyle? style,
   }) {
-    final splitNodes = _splitNodeBySelection(selection, pair, middle: middle);
+    final splitNodes = _splitNodeBySelection(
+      selection,
+      pair,
+      style: style,
+    );
 
-    pair.merge();
+    pair.fuse();
 
     _chainNodes(
       splitNodes: splitNodes,
       previous: pair.head.previous,
       next: pair.trail.next,
+      operation: selection.status,
     );
   }
 
   List<FormatNode> _splitNodeBySelection(
     BlockEditingSelection selection,
     NodePair pair, {
-    FormatNode? middle,
+    TextStyle? style,
   }) {
-    final firstHalf = FormatNode.position(
+    late final int previousEnd;
+    late final int nextStart;
+
+    // ! set  as [late final] will have silence exception
+    FormatNode? middle;
+
+    switch (selection.status) {
+      case BlockEditingStatus.select:
+        previousEnd = selection.latest.baseOffset;
+        nextStart = selection.latest.extentOffset;
+        break;
+      case BlockEditingStatus.insert:
+        previousEnd = selection.old.extentOffset;
+        nextStart = selection.latest.extentOffset;
+        break;
+      case BlockEditingStatus.delete:
+        previousEnd = selection.latest.baseOffset;
+        nextStart = selection.latest.extentOffset;
+        break;
+      default:
+        throw ErrorDescription('cannot split nodes for init status');
+    }
+
+    final previous = FormatNode.position(
       pair.start,
-      selection.latest.baseOffset,
+      previousEnd,
       style: pair.head.style,
     );
-    final secondHalf = FormatNode.position(
-      selection.latest.extentOffset,
-      pair.end,
+
+    if (selection.status == BlockEditingStatus.select ||
+        selection.status == BlockEditingStatus.insert) {
+      middle = FormatNode.position(
+        previousEnd,
+        nextStart,
+        style: style ?? pair.head.style,
+      );
+    }
+
+    final next = FormatNode.position(
+      nextStart,
+      pair.end + selection.delta,
       style: pair.trail.style,
     );
 
+    print('next start: ${nextStart}, end: ${pair.end + selection.delta}');
+
+    print('previous: ${previous.range}');
+    print('middle: ${middle?.range}');
+    print('next : ${next.range}');
+
     if (middle != null) {
-      return [firstHalf, middle, secondHalf];
+      return [previous, middle, next];
     } else {
-      return [firstHalf, secondHalf];
+      return [previous, next];
     }
   }
 
@@ -126,24 +197,40 @@ mixin LeafTextBlockOperationDelegate {
     FormatNode? previous,
     FormatNode? next,
     required List<FormatNode> splitNodes,
+    required BlockEditingStatus operation,
   }) {
     assert(splitNodes.length >= 2);
 
-    for (int i = 1; i < splitNodes.length; i++) {
-      splitNodes[i - 1].chainNext(splitNodes[i]);
-    }
+    FormatNode chain = splitNodes.first;
 
-    if (previous != null) {
-      previous.chainNext(splitNodes.first);
-    } else {
-      headNode.copy(splitNodes.first);
+    for (final node in splitNodes) {
+      chain = chain.chainNext(node);
     }
 
     if (next != null) {
-      splitNodes.last.chainNext(next);
+      chain.chainNext(next);
     }
 
-    final baseOffset = splitNodes.last.range.start;
-    splitNodes.last.translateTo(baseOffset);
+    print('first node: ${chain.range}');
+
+    if (previous != null) {
+      previous.chainNext(chain);
+    } else {
+      headNode.unlink();
+      headNode = chain;
+    }
+
+    print('headNode range: ${headNode.range}');
+
+    // final baseOffset = splitNodes.last.range.start;
+    // splitNodes.last.translateTo(baseOffset);
+    late final baseOffset = chain.range.start;
+    chain.translateTo(baseOffset);
   }
+}
+
+enum Operation {
+  select,
+  delete,
+  insert,
 }

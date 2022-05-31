@@ -46,11 +46,16 @@ class NodeRange {
       );
 
   bool contains(int spot) {
-    return start < spot && end >= spot;
+    final isZero = spot == 0 && start == 0;
+
+    return (isZero || start < spot) && end >= spot;
   }
 
+  int get interval => end - start;
+
   NodeRange operator +(covariant NodeRange other) {
-    assert(end == other.start, 'NodeRanges must be consecutive to add');
+    assert(end == other.start || start == other.start && end == other.end,
+        'NodeRanges must be consecutive or identical to add');
     return NodeRange(start: start, end: other.end);
   }
 
@@ -61,4 +66,9 @@ class NodeRange {
 
   @override
   int get hashCode => hashValues(start, end);
+
+  @override
+  String toString() {
+    return 'NodeRange($start, $end)';
+  }
 }

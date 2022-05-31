@@ -25,6 +25,8 @@ class BlockEditingController extends TextEditingController
       return TextSpan(style: defaultStyle, text: text);
     }
 
+    print('text: ${value.text}');
+
     return _block.headNode.build(value.text);
   }
 
@@ -32,18 +34,28 @@ class BlockEditingController extends TextEditingController
   set value(TextEditingValue newValue) {
     final editingSelection = compare(newValue);
 
-    // TODO: update FormatNode range
-    // TODO: should receive if has TextStyle from editor toolbar
-
     final styleMerged = _block.mayUpdateNodes(editingSelection);
+
+    print('old value selection: ${value.selection}');
+    print('new value selection: ${newValue.selection}');
+    print('selection offset: ${editingSelection.delta}');
+    print('style merged: $styleMerged');
 
     if (value != newValue || styleMerged) {
       super.value = newValue;
     }
   }
+
+  // will update value or style by EditorToolbar state
+  void mayApplyStyle([bool shouldApply = false]) {
+    if (shouldApply) {
+      value = value.copyWith();
+    }
+  }
 }
 
 enum BlockEditingStatus {
+  init,
   insert,
   select,
   delete,
@@ -73,8 +85,12 @@ mixin BlockEditingCompare on TextEditingController {
     late final BlockEditingStatus status;
     if (textOffset > 0 && selectionOffset.isCollapsed) {
       status = BlockEditingStatus.insert;
-    } else if (textOffset < 0 && !selectionOffset.isValid) {
+    } else if (textOffset < 0) {
       status = BlockEditingStatus.delete;
+    } else if (!value.selection.isValid &&
+        newValue.selection.isCollapsed &&
+        newValue.selection.baseOffset == 0) {
+      status = BlockEditingStatus.init;
     } else {
       status = BlockEditingStatus.select;
     }

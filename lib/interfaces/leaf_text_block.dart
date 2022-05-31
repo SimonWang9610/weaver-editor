@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/interfaces/block_editing_controller.dart';
-import 'package:weaver_editor/interfaces/editor_toolbar.dart';
+import 'package:weaver_editor/interfaces/editor.dart';
 import 'package:weaver_editor/interfaces/format_node.dart';
 import 'package:weaver_editor/interfaces/leaf_text_block_mixin.dart';
 import 'package:weaver_editor/interfaces/toolbar_attach_delegate.dart';
 import 'content_block.dart';
 
 class LeafTextBlock extends ContentBlock {
+  final String type;
   final TextStyle style;
 
   const LeafTextBlock({
     Key? key,
     required this.style,
-    String type = 'paragraph',
+    required this.type,
   }) : super(key: key);
 
   @override
@@ -20,12 +21,10 @@ class LeafTextBlock extends ContentBlock {
 }
 
 class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
-    with LeafTextBlockOperationDelegate, EditorToolbarDelegate {
+    with EditorToolbarDelegate, LeafTextBlockOperationDelegate {
   late final BlockEditingController controller;
   final FocusNode focus = FocusNode();
   late FormatNode _node;
-
-  EditorToolbar? attachedToolbar;
 
   @override
   FormatNode get headNode => _node;
@@ -48,10 +47,17 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
       selection: controller.selection,
       style: widget.style,
     );
+
+    print('headNode: ${_node.range}');
+    focus.addListener(handleFocusChange);
+
+    focus.requestFocus();
   }
 
   @override
   void dispose() {
+    focus.removeListener(handleFocusChange);
+
     controller.dispose();
     focus.dispose();
     _node.dispose();
@@ -59,25 +65,22 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
   }
 
   @override
-  bool mayUpdateNodes(
-    BlockEditingSelection selection, {
-    TextStyle? composedStyle,
-  }) {
-    // TODO: get EditorToolBar style
-    final toolBarStyle = attachedToolbar?.style;
+  void handleFocusChange() {
+    final blockProvider = EditorBlockProvider.of(context);
 
-    return super.mayUpdateNodes(selection, composedStyle: toolBarStyle);
-  }
-
-  @override
-  void attach() {
-    // TODO: use context to attach the parent EditorToobar
-    // TODO: should listen
-    // TODO: when focus is not focusing, should detach EditorToolbar
+    if (focus.hasFocus) {
+      attachedToolbar = blockProvider.attachContentBlock(controller);
+    } else {
+      blockProvider.detachContentBlock();
+      attachedToolbar = null;
+    }
+    print('toolbar has attached to block');
   }
 
   @override
   Widget build(BuildContext context) {
+    print('build text block: ${widget.key}');
+
     return TextField(
       // selectionControls: CustomSelectionControls(controller),
       strutStyle: strut,
@@ -88,8 +91,12 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
       controller: controller,
       focusNode: focus,
       maxLines: null,
-      onTap: () {
-        focus.requestFocus();
+      // onTap: () {
+      //   focus.requestFocus();
+      // },
+      onEditingComplete: () {
+        focus.unfocus();
+        // TODO: should create new ContentBblock inside of ContainerBlock
       },
     );
   }
