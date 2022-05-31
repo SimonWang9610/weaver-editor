@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:weaver_editor/interfaces/editor_toolbar.dart';
 import 'package:weaver_editor/interfaces/leaf_text_block.dart';
 
@@ -15,15 +14,20 @@ class BlockEditingController extends TextEditingController
         super(text: text);
 
   @override
-  TextSpan buildTextSpan(
-      {required BuildContext context,
-      TextStyle? style,
-      required bool withComposing}) {
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
     print('building custom text span');
 
-    if (!value.isComposingRangeValid || !withComposing) {
-      final defaultStyle = _block.headNode.style;
-      return TextSpan(style: defaultStyle, text: text);
+    // if (!value.isComposingRangeValid || !withComposing) {
+    //   final defaultStyle = _block.headNode.style;
+    //   return TextSpan(style: defaultStyle, text: text);
+    // }
+
+    if (!_block.headNode.range.isValid) {
+      return TextSpan(style: _block.headNode.style, text: text);
     }
 
     return _block.headNode.build(value.text);
@@ -46,8 +50,8 @@ class BlockEditingController extends TextEditingController
   }
 
   // will update value or style by EditorToolbar state
-  void mayApplyStyle([bool shouldApply = false]) {
-    if (shouldApply) {
+  void mayApplyStyle() {
+    if (!selection.isCollapsed) {
       value = value.copyWith();
     }
   }

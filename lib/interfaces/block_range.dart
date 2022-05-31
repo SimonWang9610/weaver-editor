@@ -32,7 +32,7 @@ class NodeRange {
   }
 
   bool get isCollapsed => start >= end;
-
+  bool get isValid => start >= 0 && end >= start;
   // translate range starting from the baseOffset
   NodeRange translateTo(int baseOffset) {
     final extOffset = baseOffset + (end - start);

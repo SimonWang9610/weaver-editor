@@ -57,7 +57,7 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
     NodePair pair, {
     TextStyle? composedStyle,
   }) {
-    if (!attachedToolbar!.formatting) {
+    if (selection.latest.isCollapsed) {
       attachedToolbar?.synchronize(pair.head.style);
     }
 
@@ -82,9 +82,9 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
       pair,
     );
 
-    if (attachedToolbar!.style != pair.head.style) {
-      attachedToolbar?.synchronize(pair.head.style);
-    }
+    // if (attachedToolbar!.style != pair.head.style) {
+    //   attachedToolbar?.synchronize(pair.head.style);
+    // }
   }
 
   void insertBySelection(
@@ -92,7 +92,6 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
     NodePair pair, {
     TextStyle? composedStyle,
   }) {
-    print('inserting text');
     pair.head = pair.head.nodeContainsSpot(
       selection.old.baseOffset,
       searchNext: false,
@@ -217,10 +216,4 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
 
     print('headNode: $headNode');
   }
-}
-
-enum Operation {
-  select,
-  delete,
-  insert,
 }

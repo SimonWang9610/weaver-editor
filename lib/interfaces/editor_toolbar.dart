@@ -6,8 +6,6 @@ class EditorToolbar with ChangeNotifier {
   TextStyle _style;
   TextAlign _align;
 
-  bool _formatting = false;
-
   EditorToolbar(TextStyle style, {TextAlign? align})
       : _style = style,
         _historyStyle = style,
@@ -19,8 +17,6 @@ class EditorToolbar with ChangeNotifier {
       print('@@@@formatting text by toolbar');
       _historyStyle = _style;
       _style = value;
-      _formatting = true;
-
       notifyListeners();
     }
   }
@@ -33,13 +29,20 @@ class EditorToolbar with ChangeNotifier {
     }
   }
 
-  bool get formatting => _formatting;
+  // only when set cursor manually or delete text
+  // we need to synchronize style with the format node
+  // once we complete select/insert operation
+  // we must reset [needSynchronized] to false
+  // because the two operations always make tool bar synchronized with node
   bool get synchronized => _historyStyle == _style;
 
   BlockEditingController? _attachedController;
 
   EditorToolbar attach(BlockEditingController controller) {
     // should detach bound controller before attaching new controller
+
+    if (_attachedController == controller) return this;
+
     detach();
     _attachedController = controller;
 
@@ -80,14 +83,16 @@ class EditorToolbar with ChangeNotifier {
   }
 
   void _applyStyleByController() {
-    _attachedController?.mayApplyStyle(!synchronized || formatting);
+    _attachedController?.mayApplyStyle();
   }
 
   void synchronize(TextStyle value) {
     print('synchronizing tool bal style..........');
+
+    if (synchronized && _style == value) return;
+
     _historyStyle = value;
     _style = value;
-    _formatting = false;
     // will re-build EditorToolbarWidget
     // to follow the style of the focused FormatNode
     notifyListeners();
