@@ -37,7 +37,7 @@ class BlockEditingController extends TextEditingController
   set value(TextEditingValue newValue) {
     final editingSelection = compare(newValue);
 
-    final styleMerged = _block.mayUpdateNodes(editingSelection);
+    final styleMerged = _block.transform(editingSelection);
 
     print('old value selection: ${value.selection}');
     print('new value selection: ${newValue.selection}');

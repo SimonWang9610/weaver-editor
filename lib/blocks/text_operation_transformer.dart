@@ -5,7 +5,7 @@ import 'package:weaver_editor/toolbar/toolbar_attach_delegate.dart';
 import '../widgets/block_editing_controller.dart';
 import '../models/node_pair.dart';
 
-mixin LeafTextBlockOperationDelegate<T extends ContentBlock>
+mixin LeafTextBlockTransformer<T extends ContentBlock>
     on EditorToolbarDelegate<T> {
   FormatNode get headNode;
   set headNode(FormatNode newNode);
@@ -16,7 +16,7 @@ mixin LeafTextBlockOperationDelegate<T extends ContentBlock>
     return pair;
   }
 
-  bool mayUpdateNodes(
+  bool transform(
     BlockEditingSelection selection, {
     TextStyle? composedStyle,
   }) {

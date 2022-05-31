@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/block_editing_controller.dart';
 import '../widgets/editor.dart';
 import '../models/format_node.dart';
-import 'text_block_delegate.dart';
+import 'text_operation_transformer.dart';
 import '../toolbar/toolbar_attach_delegate.dart';
 import 'content_block.dart';
 
@@ -21,7 +21,7 @@ class LeafTextBlock extends ContentBlock {
 }
 
 class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
-    with EditorToolbarDelegate, LeafTextBlockOperationDelegate {
+    with EditorToolbarDelegate, LeafTextBlockTransformer {
   late final BlockEditingController controller;
 
   final FocusNode focus = FocusNode();
@@ -86,8 +86,19 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
       strutStyle: strut,
       style: widget.style,
       textAlign: align ?? TextAlign.start,
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(2),
+          borderSide: const BorderSide(
+            color: Colors.white38,
+            width: 1,
+          ),
+        ),
+        hintText: 'Write something',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(2),
+          borderSide: BorderSide.none,
+        ),
       ),
       controller: controller,
       focusNode: focus,
