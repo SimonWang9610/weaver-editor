@@ -21,13 +21,19 @@ class FormatNode {
     return FormatNode(selection: selection, style: style);
   }
 
-  void copy(FormatNode other) {
-    range = other.range;
-    style = other.style;
-    previous = other.previous;
-    next = other.next;
+  static NodePair chain(List<FormatNode> nodes) {
+    final trail = nodes.fold<FormatNode>(nodes.first, (previous, current) {
+      final merged = previous.merge(current);
 
-    other.unlink();
+      if (merged != null) {
+        return merged;
+      } else {
+        previous.chainNext(current);
+        return current;
+      }
+    });
+
+    return NodePair(nodes.first, trail: trail);
   }
 
   void unlink() {
@@ -57,20 +63,15 @@ class FormatNode {
     }
   }
 
-  void translateTo(int baseOffset) {
+  void translateBase(int baseOffset) {
     print('translate from ${range.start} to $baseOffset');
-    range = range.translateTo(baseOffset);
 
-    next?.translateTo(range.end);
+    if (range.start != baseOffset) {
+      range = range.translateTo(baseOffset);
+
+      next?.translateBase(range.end);
+    }
   }
-
-  @override
-  bool operator ==(covariant FormatNode other) {
-    return range == other.range;
-  }
-
-  @override
-  int get hashCode => range.hashCode;
 
   void findNodePair(BlockEditingSelection selection, NodePair pair) {
     if (selection.status == BlockEditingStatus.init) {
@@ -104,44 +105,50 @@ class FormatNode {
     } else {
       range = range.rerangeTo(
         baseOffset: range.start,
-        extentOffset: selection.latest.extentOffset,
+        extentOffset: selection.old.extentOffset,
       );
       pair.trail = this;
       pair.markAsPaired();
     }
   }
 
-  FormatNode? nodeContainsSpot(int spot) {
+  FormatNode? nodeContainsSpot(int spot, {bool searchNext = true}) {
     if (range.contains(spot)) {
       return this;
     } else {
-      return next?.nodeContainsSpot(spot);
+      return searchNext
+          ? next?.nodeContainsSpot(spot)
+          : previous?.nodeContainsSpot(
+              spot,
+              searchNext: false,
+            );
     }
   }
 
-  FormatNode chainNext(FormatNode other) {
-    print('chained: $range -> ${other.range}');
-    // if two nodes have same styles, merge them instead of chaining them
+  void chainNext(FormatNode other) {
+    assert(range.canChain(other.range), '');
 
-    if (next == null) {
-      if (style == other.style) {
-        range = range + other.range;
-        next = other.next;
-        other.unlink();
-        return this;
-      } else {
-        next = other;
-        other.previous = this;
-        return other;
-      }
+    if (!range.canChain(other.range)) {
+      throw ErrorDescription('cannot chain $range <--> ${other.range}');
+    }
+    next = other;
+    other.previous = this;
+  }
+
+  FormatNode? merge(FormatNode other) {
+    if (style == other.style || other.range.canMerge(range)) {
+      range = range + other.range;
+      next = other.next;
+      other.unlink();
+      return this;
     } else {
-      return next!.chainNext(other);
+      return null;
     }
   }
 
   TextSpan build(String content) {
     final text = content.characters.getRange(range.start, range.end).string;
-
+    print('$range: $text');
     final chainedSpan = next?.build(content);
 
     return TextSpan(
@@ -151,5 +158,18 @@ class FormatNode {
         if (chainedSpan != null) chainedSpan,
       ],
     );
+  }
+
+  @override
+  bool operator ==(covariant FormatNode other) {
+    return range == other.range;
+  }
+
+  @override
+  int get hashCode => range.hashCode;
+
+  @override
+  String toString() {
+    return '$range -> $next';
   }
 }

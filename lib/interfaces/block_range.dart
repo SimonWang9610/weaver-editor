@@ -51,6 +51,11 @@ class NodeRange {
     return (isZero || start < spot) && end >= spot;
   }
 
+  bool canChain(NodeRange other) => end == other.start;
+  bool canMerge(NodeRange previous) {
+    return previous.end == start && start == end;
+  }
+
   int get interval => end - start;
 
   NodeRange operator +(covariant NodeRange other) {

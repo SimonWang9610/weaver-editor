@@ -47,7 +47,6 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
         break;
     }
 
-    pair.unpair();
     print('^^^^^^^^^^^^end^^^^^^^^^^^^^^^^^^');
 
     return pair.isMerged();
@@ -58,20 +57,13 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
     NodePair pair, {
     TextStyle? composedStyle,
   }) {
-    late final TextStyle activeStyle;
-
-    if (selection.latest.isCollapsed && !attachedToolbar!.formatting) {
-      activeStyle = pair.head.style;
-
-      if (!attachedToolbar!.synchronized) {
-        // keep toolbar style same as the focused FormatNode
-        attachedToolbar?.synchronize(activeStyle);
-      }
-    } else {
-      activeStyle = attachedToolbar!.style;
+    if (!attachedToolbar!.formatting) {
+      attachedToolbar?.synchronize(pair.head.style);
     }
 
-    if (activeStyle != pair.head.style) {
+    final activeStyle = attachedToolbar!.style;
+
+    if (activeStyle != pair.head.style && !selection.latest.isCollapsed) {
       _handleOperation(
         selection,
         pair,
@@ -101,8 +93,10 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
     TextStyle? composedStyle,
   }) {
     print('inserting text');
-    pair.head = pair.head.nodeContainsSpot(selection.old.baseOffset)!;
-
+    pair.head = pair.head.nodeContainsSpot(
+      selection.old.baseOffset,
+      searchNext: false,
+    )!;
     _handleOperation(
       selection,
       pair,
@@ -123,10 +117,12 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
 
     pair.fuse();
 
+    final sanitizedPair = pair.sanitize()!;
+
     _chainNodes(
       splitNodes: splitNodes,
-      previous: pair.head.previous,
-      next: pair.trail.next,
+      previous: sanitizedPair.first,
+      next: sanitizedPair.last,
       operation: selection.status,
     );
   }
@@ -180,8 +176,6 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
       style: pair.trail.style,
     );
 
-    print('next start: ${nextStart}, end: ${pair.end + selection.delta}');
-
     print('previous: ${previous.range}');
     print('middle: ${middle?.range}');
     print('next : ${next.range}');
@@ -201,31 +195,27 @@ mixin LeafTextBlockOperationDelegate on EditorToolbarDelegate {
   }) {
     assert(splitNodes.length >= 2);
 
-    FormatNode chain = splitNodes.first;
+    final chained = FormatNode.chain(splitNodes);
 
-    for (final node in splitNodes) {
-      chain = chain.chainNext(node);
-    }
+    print('previous: $previous');
+    print('chained split nodes: $chained');
+    print('next: $next');
 
     if (next != null) {
-      chain.chainNext(next);
+      // ! next will base on the old previous node
+      // ! must translateBase before chaining to the new node
+      next.translateBase(chained.trail.range.end);
+      chained.trail.chainNext(next);
     }
-
-    print('first node: ${chain.range}');
 
     if (previous != null) {
-      previous.chainNext(chain);
+      previous.chainNext(chained.head);
     } else {
       headNode.unlink();
-      headNode = chain;
+      headNode = chained.head;
     }
 
-    print('headNode range: ${headNode.range}');
-
-    // final baseOffset = splitNodes.last.range.start;
-    // splitNodes.last.translateTo(baseOffset);
-    late final baseOffset = chain.range.start;
-    chain.translateTo(baseOffset);
+    print('headNode: $headNode');
   }
 }
 

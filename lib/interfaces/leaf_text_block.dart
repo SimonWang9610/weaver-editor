@@ -91,9 +91,9 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
       controller: controller,
       focusNode: focus,
       maxLines: null,
-      // onTap: () {
-      //   focus.requestFocus();
-      // },
+      onTap: () {
+        print('tapped on text block');
+      },
       onEditingComplete: () {
         focus.unfocus();
         // TODO: should create new ContentBblock inside of ContainerBlock

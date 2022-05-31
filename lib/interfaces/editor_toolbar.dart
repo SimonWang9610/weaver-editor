@@ -16,6 +16,7 @@ class EditorToolbar with ChangeNotifier {
   TextStyle get style => _style;
   set style(TextStyle value) {
     if (_style != value) {
+      print('@@@@formatting text by toolbar');
       _historyStyle = _style;
       _style = value;
       _formatting = true;
@@ -53,12 +54,12 @@ class EditorToolbar with ChangeNotifier {
   }
 
   void boldText() {
-    if (style.fontWeight == FontWeight.bold) {
+    if (style.fontWeight == FontWeight.w900) {
       style = style.copyWith(
         fontWeight: FontWeight.normal,
       );
     } else {
-      style = style.copyWith(fontWeight: FontWeight.bold);
+      style = style.copyWith(fontWeight: FontWeight.w900);
     }
   }
 
@@ -83,6 +84,7 @@ class EditorToolbar with ChangeNotifier {
   }
 
   void synchronize(TextStyle value) {
+    print('synchronizing tool bal style..........');
     _historyStyle = value;
     _style = value;
     _formatting = false;
@@ -142,21 +144,22 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             FormatBoldButton(
-              iconColor: _currentStyle.fontWeight == FontWeight.bold
-                  ? Colors.grey
+              backgroundColor: _currentStyle.fontWeight == FontWeight.w900
+                  ? Colors.greenAccent
                   : null,
               onPressed: widget.toolbar.boldText,
             ),
             FormatItalicButton(
-              iconColor: _currentStyle.fontStyle == FontStyle.italic
-                  ? Colors.grey
+              backgroundColor: _currentStyle.fontStyle == FontStyle.italic
+                  ? Colors.greenAccent
                   : null,
               onPressed: widget.toolbar.italicText,
             ),
             FormatUnderlineButton(
-              iconColor: _currentStyle.decoration == TextDecoration.underline
-                  ? Colors.grey
-                  : null,
+              backgroundColor:
+                  _currentStyle.decoration == TextDecoration.underline
+                      ? Colors.greenAccent
+                      : null,
               onPressed: widget.toolbar.underlineText,
             )
           ],
@@ -172,60 +175,67 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
 }
 
 class FormatBoldButton extends StatelessWidget {
-  final Color? iconColor;
+  final Color? backgroundColor;
   final VoidCallback? onPressed;
   const FormatBoldButton({
     Key? key,
-    this.iconColor,
+    this.backgroundColor,
     this.onPressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      color: iconColor,
-      icon: const Icon(
-        Icons.format_bold_outlined,
+    return TextButton(
+      style: TextButton.styleFrom(
+        backgroundColor: backgroundColor,
+        shape: const RoundedRectangleBorder(),
       ),
+      onPressed: onPressed,
+      child: const Icon(Icons.format_bold_outlined),
     );
   }
 }
 
 class FormatItalicButton extends StatelessWidget {
-  final Color? iconColor;
+  final Color? backgroundColor;
   final VoidCallback? onPressed;
   const FormatItalicButton({
     Key? key,
-    this.iconColor,
+    this.backgroundColor,
     this.onPressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return TextButton(
+      style: TextButton.styleFrom(
+        backgroundColor: backgroundColor,
+        shape: const RoundedRectangleBorder(),
+      ),
       onPressed: onPressed,
-      color: iconColor,
-      icon: const Icon(Icons.format_italic_outlined),
+      child: const Icon(Icons.format_italic_outlined),
     );
   }
 }
 
 class FormatUnderlineButton extends StatelessWidget {
-  final Color? iconColor;
+  final Color? backgroundColor;
   final VoidCallback? onPressed;
   const FormatUnderlineButton({
     Key? key,
-    this.iconColor,
+    this.backgroundColor,
     this.onPressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return TextButton(
+      style: TextButton.styleFrom(
+        backgroundColor: backgroundColor,
+        shape: const RoundedRectangleBorder(),
+      ),
       onPressed: onPressed,
-      color: iconColor,
-      icon: const Icon(Icons.format_underline_outlined),
+      child: const Icon(Icons.format_underline_outlined),
     );
   }
 }

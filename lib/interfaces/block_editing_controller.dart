@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:weaver_editor/interfaces/editor_toolbar.dart';
 import 'package:weaver_editor/interfaces/leaf_text_block.dart';
 
@@ -24,8 +25,6 @@ class BlockEditingController extends TextEditingController
       final defaultStyle = _block.headNode.style;
       return TextSpan(style: defaultStyle, text: text);
     }
-
-    print('text: ${value.text}');
 
     return _block.headNode.build(value.text);
   }

@@ -27,7 +27,7 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.titleSmall ?? const TextStyle();
+    final style = Theme.of(context).textTheme.titleMedium ?? const TextStyle();
 
     return WeaverEditor(
       toolbar: EditorToolbar(style),

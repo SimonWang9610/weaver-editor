@@ -22,21 +22,34 @@ class NodePair {
 
     head.fuse(head, trail);
     _merged = true;
-    print('pair merged: (${head.range} <--> ${trail.range}');
   }
 
-  void unpair() {
+  List<FormatNode?>? sanitize() {
     // if merged, it turns out some operations on this pair
     // the head should unlink its previous
     // the trail should unlink its next
     // avoiding memory leak
     if (_merged) {
+      final previous = head.previous;
+      final next = trail.next;
+
       head.previous = null;
       trail.next = null;
+      previous?.next = null;
+      next?.previous = null;
+      return [previous, next];
     }
+    return null;
   }
 
   int get start => head.range.start;
 
   int get end => trail.range.end;
+
+  bool get collapsed => head == trail;
+
+  @override
+  String toString() {
+    return '${head.range} <--> ${trail.range}';
+  }
 }
