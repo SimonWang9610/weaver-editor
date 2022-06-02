@@ -176,6 +176,8 @@ class FormatNode {
     return spot > range.start;
   }
 
+  bool get isInitNode => range.start == 0 && range.end == 0;
+
   FormatNode _merge(FormatNode other) {
     range = range + other.range;
     next = other.next;
@@ -191,7 +193,7 @@ class FormatNode {
   @override
   int get hashCode => range.hashCode;
 
-  bool get isHeadNode => range.start == 0;
+  bool get canAsHeadNode => range.start == 0;
 
   @override
   String toString() {

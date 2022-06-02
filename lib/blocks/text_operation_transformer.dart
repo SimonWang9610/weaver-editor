@@ -7,6 +7,15 @@ import '../controller/editing_selection.dart';
 import '../models/node_pair.dart';
 import '../models/hyper_link_node.dart';
 
+/// [updateBySelection]
+/// 1) if [TextSelection.isCollapsed], we should synchronize the toolbar style with the current format node
+/// 2) [TextSelection] is not collapsed, we should only apply the toolbar style
+///   when the toolbar is not synchronized
+///
+/// [deleteBySelection]
+/// [insertBySelection]
+///  no need to manually synchronize the toolbar style
+///   because there is always collapsed selection operation after delete and insert operations
 mixin LeafTextBlockTransformer<T extends ContentBlock>
     on EditorToolbarDelegate<T> {
   FormatNode get headNode;
@@ -144,11 +153,23 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
       chained.trail.chainNext(next);
     }
 
-    if (chained.head.isHeadNode || previous == null) {
+    if (chained.head.canAsHeadNode || previous == null) {
       headNode.unlink();
       headNode = chained.head;
     } else {
       previous.chainNext(chained.head);
+    }
+
+    if (headNode is HyperLinkNode && headNode.isInitNode) {
+      // avoid the head node is an empty HyperLinkNode
+      final formatNode = FormatNode.position(
+        0,
+        0,
+        style: attachedToolbar?.style ?? defaultStyle,
+      );
+      formatNode.next = headNode.next;
+      headNode.unlink();
+      headNode = formatNode;
     }
 
     print('headNode: $headNode');

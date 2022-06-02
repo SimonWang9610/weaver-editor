@@ -49,6 +49,8 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
       style: widget.style,
     );
 
+    defaultStyle = widget.style;
+
     print('headNode: ${_node.range}');
     focus.addListener(handleFocusChange);
 

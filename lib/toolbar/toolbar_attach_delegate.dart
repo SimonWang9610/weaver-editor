@@ -3,6 +3,7 @@ import 'package:weaver_editor/blocks/content_block.dart';
 import 'package:weaver_editor/toolbar/editor_toolbar.dart';
 
 mixin EditorToolbarDelegate<T extends ContentBlock> on State<T> {
+  late TextStyle defaultStyle;
   EditorToolbar? attachedToolbar;
   TextAlign? align;
 
