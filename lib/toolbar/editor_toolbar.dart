@@ -1,17 +1,36 @@
-import 'package:flutter/material.dart';
-import '../widgets/block_editing_controller.dart';
-import 'buttons/text_style_buttons.dart';
+import 'dart:async';
+import 'dart:ffi';
 
-class EditorToolbar with ChangeNotifier {
+import 'package:flutter/material.dart';
+import 'package:weaver_editor/toolbar/buttons/add_link_button.dart';
+import '../controller/block_editing_controller.dart';
+
+enum ToolbarEvent {
+  formatting,
+  synchronizing,
+  align,
+}
+
+abstract class BaseToolbar {
+  final StreamController<ToolbarEvent> notifier = StreamController.broadcast();
+  late StreamSubscription _subscription;
+
   TextStyle _historyStyle;
   TextStyle _style;
   TextAlign _align;
-  bool _shouldApplyStyle = false;
 
-  EditorToolbar(TextStyle style, {TextAlign? align})
+  BlockEditingController? _attachedController;
+
+  BaseToolbar({required TextStyle style, TextAlign? align})
       : _style = style,
         _historyStyle = style,
-        _align = align ?? TextAlign.start;
+        _align = align ?? TextAlign.start {
+    _subscription = notifier.stream.listen((event) {
+      if (event == ToolbarEvent.formatting) {
+        _attachedController?.mayApplyStyle();
+      }
+    });
+  }
 
   TextStyle get style => _style;
   set style(TextStyle value) {
@@ -19,9 +38,8 @@ class EditorToolbar with ChangeNotifier {
       print('@@@@formatting text by toolbar');
       _historyStyle = _style;
       _style = value;
-      _shouldApplyStyle = true;
 
-      notifyListeners();
+      notifier.add(ToolbarEvent.formatting);
     }
   }
 
@@ -29,26 +47,65 @@ class EditorToolbar with ChangeNotifier {
   set align(TextAlign value) {
     if (_align != value) {
       _align = value;
-      _shouldApplyStyle = false;
-      notifyListeners();
     }
-  }
-
-  void synchronize(TextStyle value) {
-    print('synchronizing tool bal style..........');
-
-    if (synchronized && _style == value) return;
-
-    _historyStyle = value;
-    _style = value;
-    _shouldApplyStyle = true;
-    // will re-build EditorToolbarWidget
-    // to follow the style of the focused FormatNode
-    notifyListeners();
   }
 
   bool get synchronized => _historyStyle == _style;
 
+  void synchronize(TextStyle? value) {
+    print('synchronizing tool bal style..........');
+
+    if (value == null || synchronized && _style == value) return;
+
+    _historyStyle = value;
+    _style = value;
+    // will re-build EditorToolbarWidget
+    // to follow the style of the focused FormatNode
+
+    notifier.add(ToolbarEvent.synchronizing);
+  }
+
+  void dispose() {
+    notifier.close();
+    _subscription.cancel();
+  }
+
+  StreamSubscription listen(void Function(ToolbarEvent) handler) {
+    return notifier.stream.listen(handler);
+  }
+}
+
+class EditorToolbar extends BaseToolbar
+    with FormatStyleDelegate, InlineHyperLinkCreator {
+  EditorToolbar(TextStyle style, {TextAlign? align})
+      : super(style: style, align: align);
+
+  EditorToolbar attach(BlockEditingController controller) {
+    if (_attachedController == controller) return this;
+
+    detach();
+    _attachedController = controller;
+
+    // executeTaskAfterAttached();
+    return this;
+  }
+
+  void detach() {
+    _attachedController?.unfocus();
+    _attachedController = null;
+  }
+
+  void executeTaskAfterAttached() {
+    _attachedController?.insertLinkNode(linkData);
+  }
+
+  @override
+  Future<void> addLinkInFocusedBlock(BuildContext context) async {
+    await super.addLinkInFocusedBlock(context);
+  }
+}
+
+mixin FormatStyleDelegate on BaseToolbar {
   void boldText() {
     if (style.fontWeight == FontWeight.w900) {
       style = style.copyWith(
@@ -75,112 +132,30 @@ class EditorToolbar with ChangeNotifier {
     }
   }
 
-  BlockEditingController? _attachedController;
-
-  EditorToolbar attach(BlockEditingController controller) {
-    // should detach bound controller before attaching new controller
-
-    if (_attachedController == controller) return this;
-
-    detach();
-    _attachedController = controller;
-
-    addListener(_applyStyleByController);
-
-    return this;
-  }
-
-  void detach() {
-    removeListener(_applyStyleByController);
-
-    _attachedController?.unfocus();
-
-    _attachedController = null;
-  }
-
-  void _applyStyleByController() {
-    if (_shouldApplyStyle) {
-      _attachedController?.mayApplyStyle();
-    }
+  void setBlockAlign(TextAlign newAlign) {
+    _attachedController?.setAlign(newAlign);
   }
 }
 
-class EditorToolbarWidget extends StatefulWidget {
-  final EditorToolbar toolbar;
-  const EditorToolbarWidget({
-    Key? key,
-    required this.toolbar,
-  }) : super(key: key);
+mixin InlineHyperLinkCreator on BaseToolbar {
+  HyperLinkData? linkData;
 
-  @override
-  State<EditorToolbarWidget> createState() => _EditorToolbarWidgetState();
-}
-
-class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
-  late TextStyle _currentStyle;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentStyle = widget.toolbar.style;
-    widget.toolbar.addListener(_handleToolbarStyleChange);
+  void clearLinkData() {
+    linkData = null;
+    print('remove link Data');
   }
 
-  @override
-  void didUpdateWidget(covariant EditorToolbarWidget oldWidget) {
-    if (widget.toolbar != oldWidget.toolbar) {
-      oldWidget.toolbar.removeListener(_handleToolbarStyleChange);
-      widget.toolbar.addListener(_handleToolbarStyleChange);
-    }
-
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
-  void dispose() {
-    widget.toolbar.removeListener(_handleToolbarStyleChange);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    // TODO: enable change block align
-
-    return SizedBox(
-      width: size.width,
-      height: size.height * 0.1,
-      child: RepaintBoundary(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            FormatBoldButton(
-              backgroundColor: _currentStyle.fontWeight == FontWeight.w900
-                  ? Colors.greenAccent
-                  : null,
-              onPressed: widget.toolbar.boldText,
-            ),
-            FormatItalicButton(
-              backgroundColor: _currentStyle.fontStyle == FontStyle.italic
-                  ? Colors.greenAccent
-                  : null,
-              onPressed: widget.toolbar.italicText,
-            ),
-            FormatUnderlineButton(
-              backgroundColor:
-                  _currentStyle.decoration == TextDecoration.underline
-                      ? Colors.greenAccent
-                      : null,
-              onPressed: widget.toolbar.underlineText,
-            )
-          ],
-        ),
+  Future<void> addLinkInFocusedBlock(BuildContext context) async {
+    final int? cursorOffset = _attachedController?.selection.baseOffset;
+    final data = await showDialog<HyperLinkData>(
+      context: context,
+      builder: (_) => HyperLinkForm(
+        cursorOffset: cursorOffset,
       ),
     );
-  }
-
-  void _handleToolbarStyleChange() {
-    _currentStyle = widget.toolbar.style;
-    setState(() {});
+    // once receive data return from dialog
+    // the focus will restore
+    // at here, no block controller is attached
+    linkData = data;
   }
 }

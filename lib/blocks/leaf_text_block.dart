@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/block_editing_controller.dart';
+import '../controller/block_editing_controller.dart';
 import '../widgets/editor.dart';
 import '../models/format_node.dart';
 import 'text_operation_transformer.dart';
@@ -70,6 +70,8 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
 
     if (focus.hasFocus) {
       attachedToolbar = blockProvider.attachContentBlock(controller);
+      attachedToolbar?.executeTaskAfterAttached();
+
       print('toolbar has attached to block: ${widget.key}');
     } else {
       blockProvider.detachContentBlock();

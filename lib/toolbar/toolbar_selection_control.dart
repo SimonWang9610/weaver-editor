@@ -12,9 +12,7 @@ class BlockSelectionControl extends MaterialTextSelectionControls {
   BlockSelectionControl({
     this.toolbar,
     this.hideHandles = true,
-  }) : super() {
-    toolbar?.addListener(_willHideSelectionToolbar);
-  }
+  }) : super() {}
 
   void _willHideSelectionToolbar() {
     if (_hasSelectionToolbar) {
@@ -24,13 +22,10 @@ class BlockSelectionControl extends MaterialTextSelectionControls {
   }
 
   void disUpdateToolbar(EditorToolbar newToolbar) {
-    toolbar?.removeListener(_willHideSelectionToolbar);
     toolbar = newToolbar;
-    toolbar?.addListener(_willHideSelectionToolbar);
   }
 
   void removeToolbar() {
-    toolbar?.removeListener(_willHideSelectionToolbar);
     toolbar = null;
   }
 

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:weaver_editor/blocks/content_block.dart';
 import 'package:weaver_editor/models/format_node.dart';
 import 'package:weaver_editor/toolbar/toolbar_attach_delegate.dart';
-import '../widgets/block_editing_controller.dart';
+
+import '../controller/editing_selection.dart';
 import '../models/node_pair.dart';
+import '../models/hyper_link_node.dart';
 
 mixin LeafTextBlockTransformer<T extends ContentBlock>
     on EditorToolbarDelegate<T> {
@@ -16,16 +18,13 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
     return pair;
   }
 
-  bool transform(
-    BlockEditingSelection selection, {
-    TextStyle? composedStyle,
-  }) {
+  bool transform(BlockEditingSelection selection) {
     if (attachedToolbar == null) return false;
 
     print('^^^^^^^^^^^^^^^update format nodes^^^^^^^^^^^^^^^^');
     final pair = findNodesBySelection(selection);
 
-    print('found pair: ${pair.head.range} <--> ${pair.trail.range}');
+    print('found pair: $pair');
     print(' status: ${selection.status}');
     assert(pair.isPaired(), 'operation must be on a paired path');
 
@@ -34,7 +33,6 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
         updateBySelection(
           selection,
           pair,
-          composedStyle: composedStyle,
         );
         break;
       case BlockEditingStatus.delete:
@@ -44,7 +42,6 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
         insertBySelection(
           selection,
           pair,
-          composedStyle: composedStyle,
         );
         break;
       case BlockEditingStatus.init:
@@ -56,18 +53,23 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
     return pair.isMerged();
   }
 
-  void updateBySelection(
-    BlockEditingSelection selection,
-    NodePair pair, {
-    TextStyle? composedStyle,
-  }) {
+  void updateBySelection(BlockEditingSelection selection, NodePair pair) {
+    // ! do not apply style changes to same HyperLinkNode
+    if (pair.onSameLinkNode) return;
+    // ! if cursor at the end of HyperLinkNode, do not synchronize style
     if (selection.latest.isCollapsed) {
-      attachedToolbar?.synchronize(pair.head.style);
+      if (pair.head is! HyperLinkNode) {
+        attachedToolbar?.synchronize(pair.head.style);
+      } else {
+        attachedToolbar?.synchronize(pair.trail.next?.style);
+      }
     }
 
     final activeStyle = attachedToolbar!.style;
 
-    if (activeStyle != pair.head.style && !selection.latest.isCollapsed) {
+    if (activeStyle != pair.head.style &&
+        !selection.latest.isCollapsed &&
+        !attachedToolbar!.synchronized) {
       _handleOperation(
         selection,
         pair,
@@ -85,25 +87,18 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
       selection,
       pair,
     );
-
-    // if (attachedToolbar!.style != pair.head.style) {
-    //   attachedToolbar?.synchronize(pair.head.style);
-    // }
   }
 
-  void insertBySelection(
-    BlockEditingSelection selection,
-    NodePair pair, {
-    TextStyle? composedStyle,
-  }) {
+  void insertBySelection(BlockEditingSelection selection, NodePair pair) {
     pair.head = pair.head.nodeContainsSpot(
       selection.old.baseOffset,
       searchNext: false,
     )!;
+
     _handleOperation(
       selection,
       pair,
-      style: attachedToolbar!.style,
+      style: attachedToolbar?.style,
     );
   }
 
@@ -112,7 +107,7 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
     NodePair pair, {
     TextStyle? style,
   }) {
-    final splitNodes = _splitNodeBySelection(
+    final splitNodes = _splitFormatNodes(
       selection,
       pair,
       style: style,
@@ -130,16 +125,101 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
     );
   }
 
-  List<FormatNode> _splitNodeBySelection(
+  void _chainNodes({
+    FormatNode? previous,
+    FormatNode? next,
+    required List<FormatNode> splitNodes,
+    required BlockEditingStatus operation,
+  }) {
+    assert(splitNodes.length >= 2);
+
+    final chained = FormatNode.chain(splitNodes);
+
+    print('chained split nodes: $chained');
+
+    if (next != null) {
+      // ! next will base on the old previous node
+      // ! must translateBase before chaining to the new node
+      next.translateBase(chained.trail.range.end);
+      chained.trail.chainNext(next);
+    }
+
+    if (chained.head.isHeadNode || previous == null) {
+      headNode.unlink();
+      headNode = chained.head;
+    } else {
+      previous.chainNext(chained.head);
+    }
+
+    print('headNode: $headNode');
+  }
+
+  List<FormatNode> _splitFormatNodes(
     BlockEditingSelection selection,
     NodePair pair, {
     TextStyle? style,
   }) {
-    late final int previousEnd;
-    late final int nextStart;
+    print('split nodes...');
+    final points = _calculateSplitPoints(selection);
+    final int previousEnd = points[0];
+    late final int nextStart = points[1];
 
     // ! set  as [late final] will have silence exception
     FormatNode? middle;
+    late FormatNode previous;
+    late FormatNode next;
+
+    if (pair.head is HyperLinkNode &&
+        pair.head.notStartAt(selection.old.baseOffset)) {
+      final url = (pair.head as HyperLinkNode).url;
+      previous = HyperLinkNode.position(pair.start, previousEnd, url: url);
+    } else {
+      previous = FormatNode.position(
+        pair.start,
+        previousEnd,
+        style: pair.head.style,
+      );
+    }
+
+    if (selection.status == BlockEditingStatus.select ||
+        selection.status == BlockEditingStatus.insert) {
+      middle = _createMiddleNode(
+        selection,
+        pair,
+        style: style ?? pair.head.style,
+        start: previousEnd,
+        end: nextStart,
+      );
+    }
+
+    if (pair.trail is HyperLinkNode &&
+        pair.trail.notEndAt(selection.old.extentOffset)) {
+      final url = (pair.head as HyperLinkNode).url;
+
+      next = HyperLinkNode.position(nextStart, pair.end + selection.delta,
+          url: url);
+    } else {
+      final nextStyle = pair.trail is! HyperLinkNode
+          ? pair.trail.style
+          : pair.trail.next?.style ?? headNode.style;
+      next = FormatNode.position(
+        nextStart,
+        pair.end + selection.delta,
+        style: nextStyle,
+      );
+    }
+
+    print('split completed');
+    if (middle != null) {
+      return [previous, middle, next];
+    } else {
+      return [previous, next];
+    }
+  }
+
+  List<int> _calculateSplitPoints(BlockEditingSelection selection) {
+    late final int previousEnd;
+    late final int nextStart;
 
     switch (selection.status) {
       case BlockEditingStatus.select:
@@ -158,66 +238,29 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
         throw ErrorDescription('cannot split nodes for init status');
     }
 
-    final previous = FormatNode.position(
-      pair.start,
-      previousEnd,
-      style: pair.head.style,
-    );
-
-    if (selection.status == BlockEditingStatus.select ||
-        selection.status == BlockEditingStatus.insert) {
-      middle = FormatNode.position(
-        previousEnd,
-        nextStart,
-        style: style ?? pair.head.style,
-      );
-    }
-
-    final next = FormatNode.position(
-      nextStart,
-      pair.end + selection.delta,
-      style: pair.trail.style,
-    );
-
-    print('previous: ${previous.range}');
-    print('middle: ${middle?.range}');
-    print('next : ${next.range}');
-
-    if (middle != null) {
-      return [previous, middle, next];
-    } else {
-      return [previous, next];
-    }
+    return [previousEnd, nextStart];
   }
 
-  void _chainNodes({
-    FormatNode? previous,
-    FormatNode? next,
-    required List<FormatNode> splitNodes,
-    required BlockEditingStatus operation,
+  FormatNode? _createMiddleNode(
+    BlockEditingSelection selection,
+    NodePair pair, {
+    required TextStyle style,
+    required int start,
+    required int end,
   }) {
-    assert(splitNodes.length >= 2);
+    FormatNode? middle;
 
-    final chained = FormatNode.chain(splitNodes);
-
-    print('previous: $previous');
-    print('chained split nodes: $chained');
-    print('next: $next');
-
-    if (next != null) {
-      // ! next will base on the old previous node
-      // ! must translateBase before chaining to the new node
-      next.translateBase(chained.trail.range.end);
-      chained.trail.chainNext(next);
-    }
-
-    if (previous != null) {
-      previous.chainNext(chained.head);
+    if (attachedToolbar?.linkData != null ||
+        pair.onSameLinkNode &&
+            pair.trail.notEndAt(selection.old.extentOffset)) {
+      final url =
+          attachedToolbar?.linkData?.url ?? (pair.head as HyperLinkNode).url;
+      middle = HyperLinkNode.position(start, end, url: url);
+      attachedToolbar?.clearLinkData();
     } else {
-      headNode.unlink();
-      headNode = chained.head;
+      middle = FormatNode.position(start, end, style: style);
     }
 
-    print('headNode: $headNode');
+    return middle;
   }
 }

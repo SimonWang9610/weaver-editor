@@ -1,4 +1,5 @@
 import 'format_node.dart';
+import 'hyper_link_node.dart';
 
 class NodePair {
   FormatNode head;
@@ -35,8 +36,8 @@ class NodePair {
 
       head.previous = null;
       trail.next = null;
-      previous?.next = null;
-      next?.previous = null;
+      previous?.next?.unlink();
+      next?.previous?.unlink();
       return [previous, next];
     }
     return null;
@@ -47,6 +48,11 @@ class NodePair {
   int get end => trail.range.end;
 
   bool get collapsed => head == trail;
+
+  bool get isValidPair => head.range.interval > 0 && trail.range.interval > 0;
+
+  bool get onSameLinkNode =>
+      head is HyperLinkNode && trail is HyperLinkNode && head == trail;
 
   @override
   String toString() {

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:weaver_editor/models/hyper_link_node.dart';
 
+import '../controller/editing_selection.dart';
 import 'block_range.dart';
-import '../widgets/block_editing_controller.dart';
 import 'node_pair.dart';
 
 class FormatNode {
   FormatNode? previous;
   FormatNode? next;
 
-  late NodeRange range;
   TextStyle style;
+  late NodeRange range;
 
   FormatNode({
     required TextSelection selection,
@@ -37,6 +38,7 @@ class FormatNode {
   }
 
   void unlink() {
+    print('####################unlink: $range');
     previous = null;
     next = null;
   }
@@ -44,8 +46,7 @@ class FormatNode {
   void dispose() {
     // dereference to avoid memory leak
     next?.dispose();
-    previous = null;
-    next = null;
+    unlink();
   }
 
   void fuse(FormatNode startNode, FormatNode endNode) {
@@ -136,14 +137,21 @@ class FormatNode {
   }
 
   FormatNode? merge(FormatNode other) {
-    if (style == other.style || other.range.canMerge(range)) {
-      range = range + other.range;
-      next = other.next;
-      other.unlink();
-      return this;
-    } else {
-      return null;
+    if (other.range.isCollapsed) {
+      return _merge(other);
     }
+
+    if (this is HyperLinkNode && other is HyperLinkNode) {
+      if ((this as HyperLinkNode).url == other.url) {
+        return _merge(other);
+      }
+    }
+
+    if (style == other.style || other.range.canMerge(range)) {
+      return _merge(other);
+    }
+
+    return null;
   }
 
   TextSpan build(String content) {
@@ -160,6 +168,21 @@ class FormatNode {
     );
   }
 
+  bool notEndAt(int spot) {
+    return spot < range.end;
+  }
+
+  bool notStartAt(int spot) {
+    return spot > range.start;
+  }
+
+  FormatNode _merge(FormatNode other) {
+    range = range + other.range;
+    next = other.next;
+    other.unlink();
+    return this;
+  }
+
   @override
   bool operator ==(covariant FormatNode other) {
     return range == other.range;
@@ -167,6 +190,8 @@ class FormatNode {
 
   @override
   int get hashCode => range.hashCode;
+
+  bool get isHeadNode => range.start == 0;
 
   @override
   String toString() {

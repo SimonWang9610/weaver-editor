@@ -3,7 +3,8 @@ import 'package:nanoid/nanoid.dart';
 
 import 'package:weaver_editor/blocks/content_block.dart';
 import 'package:weaver_editor/toolbar/editor_toolbar.dart';
-import 'block_editing_controller.dart';
+import '../toolbar/toolbar_widget.dart';
+import '../controller/block_editing_controller.dart';
 import '../blocks/leaf_text_block.dart';
 
 class WeaverEditor extends StatefulWidget {
