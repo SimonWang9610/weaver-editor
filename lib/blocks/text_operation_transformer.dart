@@ -90,7 +90,7 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
   void deleteBySelection(BlockEditingSelection selection, NodePair pair) {
     assert(selection.latest.isCollapsed);
 
-    pair.trail = pair.trail.nodeContainsSpot(selection.old.extentOffset)!;
+    // pair.trail = pair.trail.nodeContainsSpot(selection.old.extentOffset)!;
 
     _handleOperation(
       selection,
@@ -99,10 +99,10 @@ mixin LeafTextBlockTransformer<T extends ContentBlock>
   }
 
   void insertBySelection(BlockEditingSelection selection, NodePair pair) {
-    pair.head = pair.head.nodeContainsSpot(
-      selection.old.baseOffset,
-      searchNext: false,
-    )!;
+    // pair.head = pair.head.nodeContainsSpot(
+    //   selection.old.baseOffset,
+    //   searchNext: false,
+    // )!;
 
     _handleOperation(
       selection,

@@ -22,6 +22,7 @@ class FormatNode {
     return FormatNode(selection: selection, style: style);
   }
 
+  // used to chain new nodes split by [select/delete/insert] operations
   static NodePair chain(List<FormatNode> nodes) {
     final trail = nodes.fold<FormatNode>(nodes.first, (previous, current) {
       final merged = previous.merge(current);
@@ -49,6 +50,8 @@ class FormatNode {
     unlink();
   }
 
+  // to fuse all nodes between [startNode] and [endNode]
+  //
   void fuse(FormatNode startNode, FormatNode endNode) {
     // merge always starts from head to trail
     // no need to propagate to its previous node
@@ -64,6 +67,8 @@ class FormatNode {
     }
   }
 
+  // translate the node to the specific baseOffset
+  // but not change its interval
   void translateBase(int baseOffset) {
     print('translate from ${range.start} to $baseOffset');
 
@@ -74,6 +79,7 @@ class FormatNode {
     }
   }
 
+  // find all nodes containing [selection]
   void findNodePair(BlockEditingSelection selection, NodePair pair) {
     if (selection.status == BlockEditingStatus.init) {
       range = NodeRange.fromSelection(selection.latest);
@@ -104,6 +110,8 @@ class FormatNode {
     if (next != null) {
       next?.findNodePair(selection, pair);
     } else {
+      // if the node is the last node
+      // we should re-range because both its baseOffset and interval may change
       range = range.rerangeTo(
         baseOffset: range.start,
         extentOffset: selection.old.extentOffset,
@@ -113,6 +121,9 @@ class FormatNode {
     }
   }
 
+  // ensure the found node pair correct
+  // if searchNext is true, we may continue searching the next node
+  // if false, we may continue searching the previous node;
   FormatNode? nodeContainsSpot(int spot, {bool searchNext = true}) {
     if (range.contains(spot)) {
       return this;
@@ -132,6 +143,11 @@ class FormatNode {
     if (!range.canChain(other.range)) {
       throw ErrorDescription('cannot chain $range <--> ${other.range}');
     }
+
+    if (!range.isValid) {
+      throw ErrorDescription('FormatNode range invalid: $this');
+    }
+
     next = other;
     other.previous = this;
   }
