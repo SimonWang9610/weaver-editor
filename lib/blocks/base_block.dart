@@ -1,16 +1,27 @@
 import 'package:flutter/material.dart';
 
-abstract class BaseBlock {
+abstract class BaseBlock<T extends Element> {
   String get id;
+
+  late T element;
+
+  Widget buildForPreview();
 }
 
-abstract class StatefulBlock extends StatefulWidget implements BaseBlock {
+abstract class StatefulBlock extends StatefulWidget
+    implements BaseBlock<StatefulBlockElement> {
   @override
   final String id;
-  const StatefulBlock({
+  StatefulBlock({
     Key? key,
     required this.id,
   }) : super(key: key);
+
+  @override
+  StatefulBlockElement createElement() {
+    element = StatefulBlockElement(this);
+    return element;
+  }
 }
 
 abstract class BlockState<T extends StatefulBlock> extends State<T>
@@ -19,17 +30,29 @@ abstract class BlockState<T extends StatefulBlock> extends State<T>
   bool get wantKeepAlive => true;
 }
 
-abstract class StatelessBlock extends StatelessWidget implements BaseBlock {
+abstract class StatelessBlock extends StatelessWidget
+    implements BaseBlock<StatelessBlockElement> {
   @override
   final String id;
-  const StatelessBlock({
+  StatelessBlock({
     Key? key,
     required this.id,
   }) : super(key: key);
+
+  @override
+  StatelessBlockElement createElement() {
+    element = StatelessBlockElement(this);
+    return element;
+  }
+
+  @override
+  Widget buildForPreview() => this;
 }
 
-abstract class BlockJsonConverter<T extends BaseBlock> {
-  Map<String, dynamic> toJson();
+class StatefulBlockElement extends StatefulElement {
+  StatefulBlockElement(StatefulBlock block) : super(block);
+}
 
-  T fromJson(Map<String, dynamic> json);
+class StatelessBlockElement extends StatelessElement {
+  StatelessBlockElement(StatelessBlock block) : super(block);
 }

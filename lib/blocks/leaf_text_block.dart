@@ -9,8 +9,8 @@ import 'base_block.dart';
 class LeafTextBlock extends StatefulBlock {
   final String type;
   final TextStyle style;
-
-  const LeafTextBlock({
+  // final String id;
+  LeafTextBlock({
     Key? key,
     required this.style,
     required this.type,
@@ -19,6 +19,19 @@ class LeafTextBlock extends StatefulBlock {
 
   @override
   BlockState<LeafTextBlock> createState() => LeafTextBlockState();
+
+  @override
+  late StatefulBlockElement element;
+
+  @override
+  Widget buildForPreview() {
+    final state = element.state as LeafTextBlockState;
+
+    return RichText(
+      textAlign: state.align ?? TextAlign.start,
+      text: state._node.build(state.controller.text),
+    );
+  }
 }
 
 class LeafTextBlockState extends BlockState<LeafTextBlock>
@@ -113,6 +126,7 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
 
   @override
   Widget get preview => RichText(
+        textAlign: align ?? TextAlign.start,
         text: headNode.build(controller.text),
       );
 }

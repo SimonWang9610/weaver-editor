@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:weaver_editor/blocks/base_block.dart';
+import 'package:weaver_editor/delegates/block_manage_delegate.dart';
 import 'package:weaver_editor/editor_toolbar.dart';
 import 'package:weaver_editor/delegates/block_creator_delegate.dart';
 import 'package:weaver_editor/components/block_manager_overlay.dart';
+import 'package:weaver_editor/preview.dart';
 import 'widgets/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
 import 'models/types.dart';
@@ -24,7 +26,8 @@ class WeaverEditor extends StatefulWidget {
 
 class _WeaverEditorState extends State<WeaverEditor> {
   late final EditorBlockProvider provider;
-  late final StreamSubscription<BlockListEvent> _sub;
+  late final StreamSubscription<BlockOperationEvent> _sub;
+  final ScrollController _scrollController = ScrollController();
 
   List<BaseBlock> _blocks = [];
 
@@ -37,13 +40,28 @@ class _WeaverEditorState extends State<WeaverEditor> {
     _sub = provider.listen(_handleBlockChange);
   }
 
-  void _handleBlockChange(BlockListEvent event) {
+  void _handleBlockChange(BlockOperationEvent event) {
     setState(() {});
+
+    // scroll to the target index when the list re-build completely
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        final offset = provider.calculateScrollPosition(event.index);
+        _scrollController.animateTo(
+          offset,
+          duration: const Duration(
+            milliseconds: 200,
+          ),
+          curve: Curves.easeIn,
+        );
+      },
+    );
   }
 
   @override
   void dispose() {
     widget.toolbar.dispose();
+    _scrollController.dispose();
     _sub.cancel();
     provider.dispose();
     super.dispose();
@@ -54,6 +72,22 @@ class _WeaverEditorState extends State<WeaverEditor> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Weaver Editor'),
+        actions: [
+          TextButton(
+            onPressed: _startPreview,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 2,
+                vertical: 2,
+              ),
+              child: Text('Preview'),
+            ),
+            style: TextButton.styleFrom(
+              elevation: 5.0,
+              backgroundColor: Colors.white,
+            ),
+          ),
+        ],
       ),
       body: Center(
         child: Padding(
@@ -65,6 +99,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
             children: [
               Expanded(
                 child: ListView(
+                  controller: _scrollController,
                   children: _interleaveBlock(),
                 ),
               ),
@@ -89,12 +124,24 @@ class _WeaverEditorState extends State<WeaverEditor> {
 
     return widgets;
   }
+
+  void _startPreview() {
+    if (_blocks.isEmpty) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlockPreview(
+          blocks: _blocks,
+        ),
+      ),
+    );
+  }
 }
 
-class EditorBlockProvider with BlockCreationDelegate {
-  final List<BaseBlock> blocks;
+class EditorBlockProvider with BlockManageDelegate, BlockCreationDelegate {
+  final List<BaseBlock> _blocks;
   final EditorToolbar toolbar;
-  final StreamController<BlockListEvent> notifier =
+  final StreamController<BlockOperationEvent> _notifier =
       StreamController.broadcast();
 
   late final BlockManager manager;
@@ -102,7 +149,7 @@ class EditorBlockProvider with BlockCreationDelegate {
   EditorBlockProvider(
     this.toolbar, {
     List<BaseBlock>? initBlocks,
-  })  : blocks = initBlocks ?? [],
+  })  : _blocks = initBlocks ?? [],
         manager = BlockManager();
 
   static EditorBlockProvider of(BuildContext context) {
@@ -115,15 +162,21 @@ class EditorBlockProvider with BlockCreationDelegate {
     return editor.provider;
   }
 
+  @override
+  List<BaseBlock> get blocks => _blocks;
+
+  @override
+  StreamController get notifier => _notifier;
+
   void dispose() {
     detachContentBlock();
     manager.dispose();
-    notifier.close();
+    _notifier.close();
   }
 
-  StreamSubscription<BlockListEvent> listen(
-      void Function(BlockListEvent event) handler) {
-    return notifier.stream.listen(handler);
+  StreamSubscription<BlockOperationEvent> listen(
+      void Function(BlockOperationEvent event) handler) {
+    return _notifier.stream.listen(handler);
   }
 
   EditorToolbar attachContentBlock(BlockEditingController controller) {
@@ -163,49 +216,24 @@ class EditorBlockProvider with BlockCreationDelegate {
       blocks.add(block);
     }
 
-    notifier.add(BlockListEvent.insert);
+    notifier.add(
+      BlockOperationEvent(
+        BlockOperation.insert,
+        index: pos ?? blocks.length - 1,
+      ),
+    );
   }
 
-  void removeBlock(int index) {
-    if (blocks.length <= index) return;
-    blocks.removeAt(index);
-    notifier.add(BlockListEvent.remove);
-  }
+  double calculateScrollPosition(int index) {
+    // used to calculate the new scroll offset
+    // after the blocks have some changes
+    double offset = 0;
 
-  void reorder(String srcId, int dstIndex) {
-    final block = findBlockById(srcId);
-    blocks.remove(block);
-    blocks.insert(dstIndex, block);
-    notifier.add(BlockListEvent.reorder);
-  }
+    for (int i = 0; i <= index; i++) {
+      final box = blocks[i].element.renderObject as RenderBox?;
+      offset += box?.size.height ?? 0 + 20;
+    }
 
-  BaseBlock findBlockById(String id) {
-    final found = blocks.singleWhere((block) => block.id == id);
-
-    return found;
-  }
-
-  String getBlockIdByIndex(int index) {
-    return blocks[index].id;
-  }
-
-  BaseBlock findBlockByIndex(int index) => blocks[index];
-
-  bool canMoveUp(int index) {
-    return index > 0 && index < blocks.length;
-  }
-
-  bool canMoveDown(int index) {
-    return index + 1 < blocks.length;
-  }
-
-  bool canDelete(int index) {
-    return index < blocks.length;
-  }
-
-  void moveBlock(int srcIndex, int step) {
-    final block = blocks.removeAt(srcIndex);
-    blocks.insert(srcIndex + step, block);
-    notifier.add(BlockListEvent.reorder);
+    return offset;
   }
 }

@@ -8,7 +8,8 @@ import 'base_block.dart';
 class VideoBlock extends StatefulBlock {
   final String? videoUrl;
   final PlatformFile? videoStream;
-  const VideoBlock({
+  // final String id;
+  VideoBlock({
     Key? key,
     this.videoUrl,
     this.videoStream,
@@ -18,6 +19,12 @@ class VideoBlock extends StatefulBlock {
 
   @override
   VideoBlockState createState() => VideoBlockState();
+
+  @override
+  late StatefulBlockElement element;
+
+  @override
+  Widget buildForPreview() => this;
 }
 
 class VideoBlockState extends BlockState<VideoBlock> {
@@ -38,6 +45,12 @@ class VideoBlockState extends BlockState<VideoBlock> {
 
     _controller.initialize();
   }
+
+  // @override
+  // String get id => widget.id;
+
+  // @override
+  // Widget get preview => build(context);
 
   @override
   void dispose() {

@@ -9,7 +9,8 @@ class ImageBlock extends StatelessBlock {
   final String? imageUrl;
   final PlatformFile? imageData;
   final double screenScale;
-  const ImageBlock({
+
+  ImageBlock({
     Key? key,
     required String id,
     this.imageUrl,
@@ -17,6 +18,9 @@ class ImageBlock extends StatelessBlock {
     this.screenScale = 0.6,
   })  : assert(imageUrl != null || imageData != null),
         super(key: key, id: id);
+
+  @override
+  late StatelessBlockElement element;
 
   @override
   Widget build(BuildContext context) {

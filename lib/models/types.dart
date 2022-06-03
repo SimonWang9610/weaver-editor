@@ -14,7 +14,7 @@ enum BlockType {
   video,
 }
 
-enum BlockListEvent {
+enum BlockOperation {
   insert,
   remove,
   reorder,
@@ -23,6 +23,12 @@ enum BlockListEvent {
 enum OverlayDirection {
   left,
   right,
+}
+
+class BlockOperationEvent {
+  final BlockOperation operation;
+  final int index;
+  BlockOperationEvent(this.operation, {required this.index});
 }
 
 class EmbedData {
