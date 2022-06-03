@@ -14,7 +14,8 @@ class LeafTextBlock extends StatefulBlock {
     Key? key,
     required this.style,
     required this.type,
-  }) : super(key: key);
+    required String id,
+  }) : super(key: key, id: id);
 
   @override
   BlockState<LeafTextBlock> createState() => LeafTextBlockState();
@@ -109,4 +110,9 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
       maxLines: null,
     );
   }
+
+  @override
+  Widget get preview => RichText(
+        text: headNode.build(controller.text),
+      );
 }

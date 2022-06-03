@@ -12,8 +12,9 @@ class VideoBlock extends StatefulBlock {
     Key? key,
     this.videoUrl,
     this.videoStream,
+    required String id,
   })  : assert(videoUrl != null || videoStream != null),
-        super(key: key);
+        super(key: key, id: id);
 
   @override
   VideoBlockState createState() => VideoBlockState();

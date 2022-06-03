@@ -71,8 +71,6 @@ class FormatNode {
   // translate the node to the specific baseOffset
   // but not change its interval
   void translateBase(int baseOffset) {
-    print('translate from ${range.start} to $baseOffset');
-
     if (range.start != baseOffset) {
       range = range.translateTo(baseOffset);
 
@@ -149,8 +147,12 @@ class FormatNode {
       throw ErrorDescription('FormatNode range invalid: $this');
     }
 
-    next = other;
-    other.previous = this;
+    if (range.canMerge(other.range)) {
+      _merge(other);
+    } else {
+      next = other;
+      other.previous = this;
+    }
   }
 
   FormatNode? merge(FormatNode other) {

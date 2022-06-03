@@ -7,27 +7,35 @@ import 'package:weaver_editor/blocks/leaf_text_block.dart';
 import 'package:weaver_editor/models/types.dart';
 
 mixin BlockCreationDelegate {
-  ValueKey generateKeyById() => ValueKey(nanoid(5));
+  String generateId() => nanoid(5);
 
   BaseBlock createParagraphBlock(TextStyle defaultStyle) {
+    final id = generateId();
     return LeafTextBlock(
-      key: generateKeyById(),
+      id: id,
+      key: ValueKey(id),
       style: defaultStyle,
       type: 'paragraph',
     );
   }
 
   BaseBlock createImageBlock(EmbedData data) {
+    final id = generateId();
+
     return ImageBlock(
-      key: generateKeyById(),
+      id: id,
+      key: ValueKey(id),
       imageUrl: data.url,
       imageData: data.file,
     );
   }
 
   BaseBlock createVideoBlock(EmbedData data) {
+    final id = generateId();
+
     return VideoBlock(
-      key: generateKeyById(),
+      id: id,
+      key: ValueKey(id),
       videoStream: data.file,
       videoUrl: data.url,
     );

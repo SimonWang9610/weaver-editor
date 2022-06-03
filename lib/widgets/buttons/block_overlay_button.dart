@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:weaver_editor/models/types.dart';
 import '../../editor.dart' show EditorBlockProvider;
 
-class BlockAddWidget extends StatelessWidget {
+class BlockOverlayButton extends StatelessWidget {
   final int index;
-  const BlockAddWidget({
+  final Widget icon;
+  final OverlayDirection direction;
+  const BlockOverlayButton({
     Key? key,
     required this.index,
+    required this.direction,
+    required this.icon,
   }) : super(key: key);
 
   @override
@@ -16,21 +21,18 @@ class BlockAddWidget extends StatelessWidget {
       link: link,
       child: IconButton(
         onPressed: () {
-          final overlayController =
-              EditorBlockProvider.of(context).overlayController;
+          final manager = EditorBlockProvider.of(context).manager;
 
-          final overlay = overlayController.createOptionOverlay(
+          final overlay = manager.createOptionOverlay(
             context,
             link: link,
             index: index,
+            direction: direction,
           );
 
           Overlay.of(context)?.insert(overlay);
         },
-        icon: const Icon(
-          Icons.add_box_outlined,
-          color: Colors.greenAccent,
-        ),
+        icon: icon,
       ),
     );
   }

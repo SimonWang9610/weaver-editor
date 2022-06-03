@@ -18,7 +18,6 @@ class NodePair {
   bool isMerged() => _merged;
 
   void fuse() {
-    print('fusing pair....');
     if (_merged) return;
 
     head.fuse(head, trail);

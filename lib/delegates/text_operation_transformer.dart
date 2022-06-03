@@ -181,7 +181,6 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
     NodePair pair, {
     TextStyle? style,
   }) {
-    print('split nodes...');
     final points = _calculateSplitPoints(selection);
     final int previousEnd = points[0];
     late final int nextStart = points[1];
@@ -231,7 +230,6 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
       );
     }
 
-    print('split completed');
     if (middle != null) {
       return [previous, middle, next];
     } else {

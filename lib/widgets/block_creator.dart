@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/editor.dart';
+import 'package:weaver_editor/models/types.dart';
 
-import 'buttons/block_add_widget.dart';
+import 'buttons/block_overlay_button.dart';
 
 class BlockControlWidget extends StatelessWidget {
   final int index;
@@ -19,16 +19,22 @@ class BlockControlWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          BlockAddWidget(index: index),
-          IconButton(
-            onPressed: () {
-              EditorBlockProvider.of(context).removeBlock(index);
-            },
+          BlockOverlayButton(
+            index: index,
+            direction: OverlayDirection.left,
             icon: const Icon(
-              Icons.delete_forever_outlined,
-              color: Colors.redAccent,
+              Icons.add_box_outlined,
+              color: Colors.greenAccent,
             ),
-          )
+          ),
+          BlockOverlayButton(
+            index: index,
+            direction: OverlayDirection.right,
+            icon: const Icon(
+              Icons.arrow_circle_left_outlined,
+              color: Colors.black,
+            ),
+          ),
         ],
       ),
     );

@@ -9,12 +9,12 @@ class BlockCreatorButton extends StatelessWidget {
   final int index;
   final BlockType type;
   final Widget? child;
-  final VoidCallback? onPressed;
+  final VoidCallback? beforePressed;
   const BlockCreatorButton({
     Key? key,
     required this.index,
     required this.type,
-    this.onPressed,
+    this.beforePressed,
     this.child,
     this.globalContext,
   }) : super(key: key);
@@ -24,7 +24,7 @@ class BlockCreatorButton extends StatelessWidget {
     return OutlinedTextButton(
       child: child ?? Text(type.name.capitalized),
       onPressed: () async {
-        onPressed?.call();
+        beforePressed?.call();
 
         switch (type) {
           case BlockType.paragraph:

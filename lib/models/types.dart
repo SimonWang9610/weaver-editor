@@ -20,6 +20,11 @@ enum BlockListEvent {
   reorder,
 }
 
+enum OverlayDirection {
+  left,
+  right,
+}
+
 class EmbedData {
   final String? url;
   final PlatformFile? file;

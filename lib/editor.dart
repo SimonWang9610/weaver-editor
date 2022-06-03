@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:weaver_editor/blocks/base_block.dart';
 import 'package:weaver_editor/editor_toolbar.dart';
 import 'package:weaver_editor/delegates/block_creator_delegate.dart';
-import 'package:weaver_editor/components/block_option_overlay.dart';
+import 'package:weaver_editor/components/block_manager_overlay.dart';
 import 'widgets/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
 import 'models/types.dart';
@@ -38,24 +38,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
   }
 
   void _handleBlockChange(BlockListEvent event) {
-    if (event == BlockListEvent.insert) {
-      _blocks = provider.blocks;
-
-      setState(() {});
-    }
-
-    switch (event) {
-      case BlockListEvent.insert:
-      case BlockListEvent.remove:
-        _blocks = provider.blocks;
-        break;
-      default:
-        return;
-    }
-
-    if (mounted) {
-      setState(() {});
-    }
+    setState(() {});
   }
 
   @override
@@ -114,13 +97,13 @@ class EditorBlockProvider with BlockCreationDelegate {
   final StreamController<BlockListEvent> notifier =
       StreamController.broadcast();
 
-  late final BlockOptionOverlay overlayController;
+  late final BlockManager manager;
 
   EditorBlockProvider(
     this.toolbar, {
     List<BaseBlock>? initBlocks,
   })  : blocks = initBlocks ?? [],
-        overlayController = BlockOptionOverlay();
+        manager = BlockManager();
 
   static EditorBlockProvider of(BuildContext context) {
     final editor = context.findAncestorStateOfType<_WeaverEditorState>();
@@ -134,6 +117,7 @@ class EditorBlockProvider with BlockCreationDelegate {
 
   void dispose() {
     detachContentBlock();
+    manager.dispose();
     notifier.close();
   }
 
@@ -196,20 +180,32 @@ class EditorBlockProvider with BlockCreationDelegate {
   }
 
   BaseBlock findBlockById(String id) {
-    final found = blocks.singleWhere((block) {
-      final key = (block as Widget).key as ValueKey<String>;
-
-      return key.value == id;
-    });
+    final found = blocks.singleWhere((block) => block.id == id);
 
     return found;
   }
 
   String getBlockIdByIndex(int index) {
-    final block = blocks[index] as Widget;
-
-    return (block.key as ValueKey<String>).value;
+    return blocks[index].id;
   }
 
   BaseBlock findBlockByIndex(int index) => blocks[index];
+
+  bool canMoveUp(int index) {
+    return index > 0 && index < blocks.length;
+  }
+
+  bool canMoveDown(int index) {
+    return index + 1 < blocks.length;
+  }
+
+  bool canDelete(int index) {
+    return index < blocks.length;
+  }
+
+  void moveBlock(int srcIndex, int step) {
+    final block = blocks.removeAt(srcIndex);
+    blocks.insert(srcIndex + step, block);
+    notifier.add(BlockListEvent.reorder);
+  }
 }
