@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/toolbar/buttons/add_link_button.dart';
-import '../controller/block_editing_controller.dart';
+import 'package:weaver_editor/widgets/buttons/add_link_button.dart';
+import 'controller/block_editing_controller.dart';
 
 enum ToolbarEvent {
   formatting,

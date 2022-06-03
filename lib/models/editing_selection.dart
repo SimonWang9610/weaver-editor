@@ -1,11 +1,5 @@
 import 'package:flutter/services.dart';
-
-enum BlockEditingStatus {
-  init,
-  insert,
-  select,
-  delete,
-}
+import 'types.dart';
 
 class BlockEditingSelection {
   final TextSelection old;

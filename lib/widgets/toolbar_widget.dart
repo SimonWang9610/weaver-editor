@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/toolbar/buttons/add_link_button.dart';
-import 'editor_toolbar.dart';
+import 'package:weaver_editor/widgets/buttons/add_link_button.dart';
+import '../editor_toolbar.dart';
 import 'buttons/text_style_buttons.dart';
 
 class EditorToolbarWidget extends StatefulWidget {
@@ -50,7 +50,7 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
 
     return SizedBox(
       width: size.width,
-      height: size.height * 0.1,
+      height: size.height * 0.05,
       child: RepaintBoundary(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

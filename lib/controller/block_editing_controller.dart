@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/toolbar/buttons/add_link_button.dart';
+import 'package:weaver_editor/widgets/buttons/add_link_button.dart';
 import 'package:weaver_editor/blocks/leaf_text_block.dart';
 
 import 'controller_delegates.dart';

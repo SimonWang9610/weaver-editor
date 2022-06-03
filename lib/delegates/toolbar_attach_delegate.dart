@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/blocks/content_block.dart';
-import 'package:weaver_editor/toolbar/editor_toolbar.dart';
+import 'package:weaver_editor/blocks/base_block.dart';
+import 'package:weaver_editor/editor_toolbar.dart';
 
-mixin EditorToolbarDelegate<T extends ContentBlock> on State<T> {
+mixin EditorToolbarDelegate<T extends StatefulBlock> on State<T> {
   late TextStyle defaultStyle;
   EditorToolbar? attachedToolbar;
   TextAlign? align;

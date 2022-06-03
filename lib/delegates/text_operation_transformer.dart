@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/blocks/content_block.dart';
+import 'package:weaver_editor/blocks/base_block.dart';
 import 'package:weaver_editor/models/format_node.dart';
-import 'package:weaver_editor/toolbar/toolbar_attach_delegate.dart';
+import 'package:weaver_editor/delegates/toolbar_attach_delegate.dart';
 
-import '../controller/editing_selection.dart';
+import '../models/editing_selection.dart';
 import '../models/node_pair.dart';
 import '../models/hyper_link_node.dart';
+import '../models/types.dart';
 
 /// [updateBySelection]
 /// 1) if [TextSelection.isCollapsed], we should synchronize the toolbar style with the current format node
@@ -16,7 +17,7 @@ import '../models/hyper_link_node.dart';
 /// [insertBySelection]
 ///  no need to manually synchronize the toolbar style
 ///   because there is always collapsed selection operation after delete and insert operations
-mixin LeafTextBlockTransformer<T extends ContentBlock>
+mixin LeafTextBlockTransformer<T extends StatefulBlock>
     on EditorToolbarDelegate<T> {
   FormatNode get headNode;
   set headNode(FormatNode newNode);

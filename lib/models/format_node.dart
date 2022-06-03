@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/models/hyper_link_node.dart';
 
-import '../controller/editing_selection.dart';
+import 'editing_selection.dart';
 import 'block_range.dart';
 import 'node_pair.dart';
+import 'types.dart';
 
 class FormatNode {
   FormatNode? previous;

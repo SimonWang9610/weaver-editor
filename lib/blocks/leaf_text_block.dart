@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../controller/block_editing_controller.dart';
-import '../widgets/editor.dart';
+import '../editor.dart';
 import '../models/format_node.dart';
-import 'text_operation_transformer.dart';
-import '../toolbar/toolbar_attach_delegate.dart';
-import 'content_block.dart';
+import '../delegates/text_operation_transformer.dart';
+import '../delegates/toolbar_attach_delegate.dart';
+import 'base_block.dart';
 
-class LeafTextBlock extends ContentBlock {
+class LeafTextBlock extends StatefulBlock {
   final String type;
   final TextStyle style;
 
@@ -17,10 +17,10 @@ class LeafTextBlock extends ContentBlock {
   }) : super(key: key);
 
   @override
-  ContentBlockState<LeafTextBlock> createState() => LeafTextBlockState();
+  BlockState<LeafTextBlock> createState() => LeafTextBlockState();
 }
 
-class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
+class LeafTextBlockState extends BlockState<LeafTextBlock>
     with EditorToolbarDelegate, LeafTextBlockTransformer {
   late final BlockEditingController controller;
 
@@ -76,7 +76,7 @@ class LeafTextBlockState extends ContentBlockState<LeafTextBlock>
 
       print('toolbar has attached to block: ${widget.key}');
     } else {
-      blockProvider.detachContentBlock();
+      // blockProvider.detachContentBlock();
       attachedToolbar = null;
       print('toolbar has been detached from ${widget.key}');
     }
