@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../components/outlined_text_button.dart';
 import '../../models/types.dart';
-import '../../editor.dart' show EditorBlockProvider;
+import '../../editor.dart' show EditorController;
 import '../block_embed_widget.dart';
 
 class BlockCreatorButton extends StatelessWidget {
@@ -28,10 +28,10 @@ class BlockCreatorButton extends StatelessWidget {
 
         switch (type) {
           case BlockType.paragraph:
-            final blockProvider =
-                EditorBlockProvider.of(globalContext ?? context);
+            final editorController =
+                EditorController.of(globalContext ?? context);
 
-            blockProvider.insertBlock(BlockType.paragraph, pos: index);
+            editorController.insertBlock(BlockType.paragraph, pos: index);
             break;
           case BlockType.image:
           case BlockType.video:
@@ -54,8 +54,8 @@ class BlockCreatorButton extends StatelessWidget {
     );
 
     if (data != null && data.isValid) {
-      final blockProvider = EditorBlockProvider.of(globalContext ?? context);
-      blockProvider.insertBlock(type, data: data, pos: index);
+      final editorController = EditorController.of(globalContext ?? context);
+      editorController.insertBlock(type, data: data, pos: index);
     }
   }
 }

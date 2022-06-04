@@ -11,7 +11,7 @@ import 'package:weaver_editor/preview.dart';
 import 'widgets/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
 import 'models/types.dart';
-import 'widgets/block_creator.dart';
+import 'widgets/block_control_widget.dart';
 
 class WeaverEditor extends StatefulWidget {
   final EditorToolbar toolbar;
@@ -25,7 +25,7 @@ class WeaverEditor extends StatefulWidget {
 }
 
 class _WeaverEditorState extends State<WeaverEditor> {
-  late final EditorBlockProvider provider;
+  late final EditorController controller;
   late final StreamSubscription<BlockOperationEvent> _sub;
   final ScrollController _scrollController = ScrollController();
 
@@ -34,19 +34,23 @@ class _WeaverEditorState extends State<WeaverEditor> {
   @override
   void initState() {
     super.initState();
-    provider = EditorBlockProvider(widget.toolbar);
-    _blocks = provider.blocks;
+    controller = EditorController(widget.toolbar);
+    _blocks = controller.blocks;
 
-    _sub = provider.listen(_handleBlockChange);
+    _sub = controller.listen(_handleBlockChange);
   }
 
   void _handleBlockChange(BlockOperationEvent event) {
     setState(() {});
+    _scrollToIndexIfNeeded(event.index);
+  }
 
+  void _scrollToIndexIfNeeded(int index) {
+    if (_blocks.length <= index) return;
     // scroll to the target index when the list re-build completely
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        final offset = provider.calculateScrollPosition(event.index);
+        final offset = controller.calculateScrollPosition(index);
         _scrollController.animateTo(
           offset,
           duration: const Duration(
@@ -63,7 +67,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
     widget.toolbar.dispose();
     _scrollController.dispose();
     _sub.cancel();
-    provider.dispose();
+    controller.dispose();
     super.dispose();
   }
 
@@ -104,7 +108,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
                 ),
               ),
               EditorToolbarWidget(
-                toolbar: provider.toolbar,
+                toolbar: controller.toolbar,
               ),
             ],
           ),
@@ -138,7 +142,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
   }
 }
 
-class EditorBlockProvider with BlockManageDelegate, BlockCreationDelegate {
+class EditorController with BlockManageDelegate, BlockCreationDelegate {
   final List<BaseBlock> _blocks;
   final EditorToolbar toolbar;
   final StreamController<BlockOperationEvent> _notifier =
@@ -146,20 +150,20 @@ class EditorBlockProvider with BlockManageDelegate, BlockCreationDelegate {
 
   late final BlockManager manager;
 
-  EditorBlockProvider(
+  EditorController(
     this.toolbar, {
     List<BaseBlock>? initBlocks,
   })  : _blocks = initBlocks ?? [],
         manager = BlockManager();
 
-  static EditorBlockProvider of(BuildContext context) {
+  static EditorController of(BuildContext context) {
     final editor = context.findAncestorStateOfType<_WeaverEditorState>();
 
     if (editor == null) {
       throw ErrorDescription('No Editor Found');
     }
 
-    return editor.provider;
+    return editor.controller;
   }
 
   @override
@@ -169,7 +173,7 @@ class EditorBlockProvider with BlockManageDelegate, BlockCreationDelegate {
   StreamController get notifier => _notifier;
 
   void dispose() {
-    detachContentBlock();
+    detachBlock();
     manager.dispose();
     _notifier.close();
   }
@@ -179,11 +183,11 @@ class EditorBlockProvider with BlockManageDelegate, BlockCreationDelegate {
     return _notifier.stream.listen(handler);
   }
 
-  EditorToolbar attachContentBlock(BlockEditingController controller) {
+  EditorToolbar attachBlock(BlockEditingController controller) {
     return toolbar.attach(controller);
   }
 
-  void detachContentBlock() {
+  void detachBlock() {
     toolbar.detach();
   }
 
@@ -208,7 +212,7 @@ class EditorBlockProvider with BlockManageDelegate, BlockCreationDelegate {
         throw UnimplementedError('Unsupported $type block');
     }
 
-    detachContentBlock();
+    detachBlock();
 
     if (pos != null && pos >= 0) {
       blocks.insert(pos, block);
