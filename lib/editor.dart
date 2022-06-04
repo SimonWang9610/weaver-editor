@@ -50,14 +50,18 @@ class _WeaverEditorState extends State<WeaverEditor> {
     // scroll to the target index when the list re-build completely
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
+        final oldOffset = _scrollController.offset;
         final offset = controller.calculateScrollPosition(index);
-        _scrollController.animateTo(
-          offset,
-          duration: const Duration(
-            milliseconds: 200,
-          ),
-          curve: Curves.easeIn,
-        );
+
+        if (offset >= oldOffset) {
+          _scrollController.animateTo(
+            offset,
+            duration: const Duration(
+              milliseconds: 200,
+            ),
+            curve: Curves.easeIn,
+          );
+        }
       },
     );
   }
