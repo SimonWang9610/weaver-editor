@@ -1,16 +1,20 @@
 # weaver_editor
 
-A new Flutter project.
+A minimum block-style rich text editor implementation.
 
-## Getting Started
+Supported: (Android, IOS)
 
-This project is a starting point for a Flutter application.
+- [x] create `Text`, `Image`, `Video` block
 
-A few resources to get you started if this is your first Flutter project:
+-  [x] style `Text` block: `bold`, `underline`, `italic`
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- [x] inline `hyper link` in `Text` block
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- [x] preview mode for all blocks
+- [x] delete blocks
+- [x] reorder blocks  
+
+Next Stage:
+- [ ] support `list` block
+- [ ] export as json conformant to `Editorjs` data format
+- [ ] import json data and preview on mobile
