@@ -20,6 +20,7 @@ class BlockEditingController extends TextEditingController
     TextStyle? style,
     required bool withComposing,
   }) {
+    // avoid throw exception when first focusing on the new created block
     if (!_block.headNode.range.isValid) {
       return TextSpan(style: _block.headNode.style, text: text);
     }
@@ -29,6 +30,7 @@ class BlockEditingController extends TextEditingController
 
   @override
   set value(TextEditingValue newValue) {
+    // compare the old value and new value to determine [BlockEditingStatus]
     final editingSelection = compare(newValue);
 
     print('old value selection: ${value.selection}');
@@ -36,6 +38,7 @@ class BlockEditingController extends TextEditingController
     print('status: ${editingSelection.status}');
     print('delta: ${editingSelection.delta}');
 
+    // transform the operation of [BlockEditingStatus] to create/update [FormatNode]
     final styleMerged = _block.transform(editingSelection);
 
     if (value != newValue || styleMerged) {
@@ -75,7 +78,6 @@ class BlockEditingController extends TextEditingController
       offset: baseOffset,
     );
 
-    print('link node: $newText');
     value = value.copyWith(
       text: newText,
       selection: newSelection,

@@ -5,6 +5,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'base_block.dart';
 
+/// must override [element] to declare its [Element] type explicitly
+/// TODO: if [imageUrl] not link to static image files, like [.jpg, .png], should fallback to request image by http
+/// TODO: how [BoxFit] works
 class ImageBlock extends StatelessBlock {
   final String? imageUrl;
   final PlatformFile? imageData;

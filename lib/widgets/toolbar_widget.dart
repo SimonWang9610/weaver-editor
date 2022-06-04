@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/widgets/buttons/add_link_button.dart';
 import '../editor_toolbar.dart';
-import 'buttons/text_style_buttons.dart';
+import 'buttons/format_button.dart';
 
 class EditorToolbarWidget extends StatefulWidget {
   final EditorToolbar toolbar;
@@ -55,24 +55,36 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            FormatBoldButton(
+            FormatButton(
               backgroundColor: _currentStyle.fontWeight == FontWeight.w900
-                  ? Colors.greenAccent
+                  ? Colors.grey
                   : null,
               onPressed: widget.toolbar.boldText,
+              icon: const Icon(
+                Icons.format_bold_outlined,
+                color: Colors.black,
+              ),
             ),
-            FormatItalicButton(
+            FormatButton(
               backgroundColor: _currentStyle.fontStyle == FontStyle.italic
-                  ? Colors.greenAccent
+                  ? Colors.grey
                   : null,
               onPressed: widget.toolbar.italicText,
+              icon: const Icon(
+                Icons.format_italic_outlined,
+                color: Colors.black,
+              ),
             ),
-            FormatUnderlineButton(
+            FormatButton(
               backgroundColor:
                   _currentStyle.decoration == TextDecoration.underline
-                      ? Colors.greenAccent
+                      ? Colors.grey
                       : null,
               onPressed: widget.toolbar.underlineText,
+              icon: const Icon(
+                Icons.format_underline_outlined,
+                color: Colors.black,
+              ),
             ),
             HyperLinkButton(
               onPressed: () => widget.toolbar.addLinkInFocusedBlock(context),

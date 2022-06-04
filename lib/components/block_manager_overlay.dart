@@ -36,9 +36,11 @@ class BlockManager extends TickerProvider {
     required int index,
     required OverlayDirection direction,
   }) {
-    EditorBlockProvider.of(context).detachContentBlock();
+    EditorController.of(context).detachBlock();
 
-    _removeOverlay();
+    if (_overlay != null) {
+      _removeOverlay();
+    }
 
     final RenderBox box = context.findRenderObject() as RenderBox;
 
@@ -71,6 +73,8 @@ class BlockManager extends TickerProvider {
 
     // targetAnchor: target origin which the follower show follow;
     // followerAnchor: follower origin which the follower should compare with the target origin
+    // TODO: understand how [targetAnchor] and [followerAnchor] position
+    // TODO: understand how the coordinate of [Position] applies to [CompositedTransformFollower]
     _overlay = OverlayEntry(
       builder: (_) => Positioned(
         left: size.width,
@@ -83,7 +87,7 @@ class BlockManager extends TickerProvider {
           child: ScaleTransition(
             scale: CurvedAnimation(
               parent: _controller,
-              curve: Curves.bounceInOut,
+              curve: Curves.bounceIn,
             ),
             child: child,
           ),
@@ -130,11 +134,11 @@ class BlockManager extends TickerProvider {
       );
 
   Widget _manageOptions(BuildContext context, int index) {
-    final blockProvider = EditorBlockProvider.of(context);
+    final editorController = EditorController.of(context);
 
-    final canMoveUp = blockProvider.canMoveUp(index);
-    final canMoveDown = blockProvider.canMoveDown(index);
-    final canDelete = blockProvider.canDelete(index);
+    final canMoveUp = editorController.canMoveUp(index);
+    final canMoveDown = editorController.canMoveDown(index);
+    final canDelete = editorController.canDelete(index);
 
     final deleteIcon = Icon(
       Icons.delete_forever_outlined,
@@ -159,7 +163,7 @@ class BlockManager extends TickerProvider {
           onPressed: () {
             if (canDelete) {
               _removeOverlay();
-              blockProvider.removeBlock(index);
+              editorController.removeBlock(index);
             }
           },
         ),
@@ -168,7 +172,7 @@ class BlockManager extends TickerProvider {
           onPressed: () {
             if (canMoveUp) {
               _removeOverlay();
-              blockProvider.moveBlock(index, -1);
+              editorController.moveBlock(index, -1);
             }
           },
         ),
@@ -177,7 +181,7 @@ class BlockManager extends TickerProvider {
           onPressed: () {
             if (canMoveDown) {
               _removeOverlay();
-              blockProvider.moveBlock(index, 1);
+              editorController.moveBlock(index, 1);
             }
           },
         )

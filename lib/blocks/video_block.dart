@@ -5,6 +5,9 @@ import 'package:video_player/video_player.dart';
 import 'package:file_picker/file_picker.dart';
 import 'base_block.dart';
 
+/// [buildForPreview] return [VideoBlock] directly
+/// TODO: to set custom aspect ratio of the [VideoPlayer]
+/// TODO: shoudl fallback to request vidoe resources if [videoUrl] not link to static video files
 class VideoBlock extends StatefulBlock {
   final String? videoUrl;
   final PlatformFile? videoStream;
@@ -45,12 +48,6 @@ class VideoBlockState extends BlockState<VideoBlock> {
 
     _controller.initialize();
   }
-
-  // @override
-  // String get id => widget.id;
-
-  // @override
-  // Widget get preview => build(context);
 
   @override
   void dispose() {

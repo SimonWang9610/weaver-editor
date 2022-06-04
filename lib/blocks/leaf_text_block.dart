@@ -6,6 +6,11 @@ import '../delegates/text_operation_transformer.dart';
 import '../delegates/toolbar_attach_delegate.dart';
 import 'base_block.dart';
 
+/// in preview mode, we do not allow to edit [LeafTextBlock]
+/// so we will Wrap its [FormatNode] using [RichText]
+/// to apply [TextStyle] and enable hit testing
+/// after [LeafTextBlockState] is initialized, we must [handleFocusChange]
+/// to determine if we need to attach/detach [EditorToolbar] by [EditorBlockProvider]
 class LeafTextBlock extends StatefulBlock {
   final String type;
   final TextStyle style;
@@ -82,10 +87,10 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
 
   @override
   void handleFocusChange() {
-    final blockProvider = EditorBlockProvider.of(context);
+    final editorController = EditorController.of(context);
 
     if (focus.hasFocus) {
-      attachedToolbar = blockProvider.attachContentBlock(controller);
+      attachedToolbar = editorController.attachBlock(controller);
       attachedToolbar?.executeTaskAfterAttached();
 
       print('toolbar has attached to block: ${widget.key}');
@@ -123,10 +128,4 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
       maxLines: null,
     );
   }
-
-  @override
-  Widget get preview => RichText(
-        textAlign: align ?? TextAlign.start,
-        text: headNode.build(controller.text),
-      );
 }
