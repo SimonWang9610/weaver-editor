@@ -87,7 +87,7 @@ class BlockManager extends TickerProvider {
           child: ScaleTransition(
             scale: CurvedAnimation(
               parent: _controller,
-              curve: Curves.bounceIn,
+              curve: Curves.linearToEaseOut,
             ),
             child: child,
           ),
