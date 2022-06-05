@@ -145,7 +145,7 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
 
     final chained = FormatNode.chain(splitNodes);
 
-    print('chained split nodes: $chained');
+    // print('chained split nodes: $chained');
 
     if (next != null) {
       // ! next will base on the old previous node
@@ -173,7 +173,7 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
       headNode = formatNode;
     }
 
-    print('headNode: $headNode');
+    // print('headNode: $headNode');
   }
 
   List<FormatNode> _splitFormatNodes(

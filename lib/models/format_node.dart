@@ -88,9 +88,9 @@ class FormatNode {
 
       pair.markAsPaired();
     } else {
-      print('old selection: ${selection.old}');
-      print('latest selection: ${selection.latest}');
-      print('delta: ${selection.delta}');
+      // print('old selection: ${selection.old}');
+      // print('latest selection: ${selection.latest}');
+      // print('delta: ${selection.delta}');
 
       if (range.contains(selection.old.baseOffset)) {
         pair.head = this;
