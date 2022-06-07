@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:weaver_editor/components/block_draggable_button.dart';
+import 'package:weaver_editor/widgets/buttons/block_draggable_button.dart';
 import 'package:weaver_editor/components/outlined_text_button.dart';
 import 'package:weaver_editor/editor.dart';
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/editor.dart';
 
+/// TODO: understand how dragAnchorStrategy locates the position of the feedback
 class BlockDraggableButton extends StatelessWidget {
   final String blockId;
   final Widget child;
