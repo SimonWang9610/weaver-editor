@@ -8,9 +8,11 @@ import 'base_block.dart';
 /// must override [element] to declare its [Element] type explicitly
 /// TODO: if [imageUrl] not link to static image files, like [.jpg, .png], should fallback to request image by http
 /// TODO: how [BoxFit] works
+/// TODO: enabel image caption
 class ImageBlock extends StatelessBlock {
   final String? imageUrl;
   final PlatformFile? imageData;
+  final String? caption;
   final double screenScale;
 
   ImageBlock({
@@ -18,12 +20,25 @@ class ImageBlock extends StatelessBlock {
     required String id,
     this.imageUrl,
     this.imageData,
+    this.caption,
     this.screenScale = 0.6,
   })  : assert(imageUrl != null || imageData != null),
         super(key: key, id: id);
 
   @override
   late StatelessBlockElement element;
+
+  @override
+  Map<String, dynamic> toMap() => {
+        'type': 'image',
+        'data': {
+          'file': imageUrl ?? imageData?.path,
+        },
+        'caption': caption,
+        'withBorder': false,
+        'withBackground': false,
+        'stretched': true,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +57,16 @@ class ImageBlock extends StatelessBlock {
             errorBuilder: (_, __, ___) => errorWidget,
           );
 
-    return SizedBox.square(
-      dimension: width,
-      child: image,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        SizedBox.square(
+          dimension: width,
+          child: image,
+        ),
+        if (caption != null) Text(caption!),
+      ],
     );
   }
 

@@ -27,6 +27,7 @@ mixin BlockCreationDelegate {
       key: ValueKey(id),
       imageUrl: data.url,
       imageData: data.file,
+      caption: data.caption,
     );
   }
 
@@ -38,6 +39,7 @@ mixin BlockCreationDelegate {
       key: ValueKey(id),
       videoStream: data.file,
       videoUrl: data.url,
+      caption: data.caption,
     );
   }
 }

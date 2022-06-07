@@ -19,6 +19,9 @@ class BlockEmbedWidget extends StatefulWidget {
 class _BlockEmbedWidgetState extends State<BlockEmbedWidget> {
   final TextEditingController _controller = TextEditingController();
 
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  String? remoteUrl;
+  String? caption;
   PlatformFile? file;
 
   @override
@@ -41,15 +44,36 @@ class _BlockEmbedWidgetState extends State<BlockEmbedWidget> {
             const SizedBox(
               height: 20,
             ),
-            const Text('Enter a remote URL or choose local files'),
-            const SizedBox(
-              height: 20,
-            ),
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Remote URL',
+            Form(
+              key: formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TextFormField(
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      hintText: '${widget.type.name.capitalized} URL',
+                    ),
+                    onChanged: (value) {
+                      remoteUrl = value;
+                    },
+                    onSaved: (value) {
+                      remoteUrl = value;
+                    },
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Caption',
+                    ),
+                    onChanged: (value) {
+                      caption = value;
+                    },
+                    onSaved: (value) {
+                      caption = value;
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(
@@ -87,12 +111,15 @@ class _BlockEmbedWidgetState extends State<BlockEmbedWidget> {
           OutlinedTextButton(
             child: const Text('Add'),
             onPressed: () {
-              final data = EmbedData(
-                url: _controller.text.isNotEmpty ? _controller.text : null,
-                file: file,
-              );
+              formKey.currentState?.save();
 
-              print('${file?.bytes}');
+              final data = EmbedData(
+                url: remoteUrl != null && remoteUrl!.isNotEmpty
+                    ? remoteUrl
+                    : null,
+                file: file,
+                caption: caption,
+              );
 
               Navigator.of(context).pop(data);
             },

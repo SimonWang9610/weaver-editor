@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:weaver_editor/blocks/base_block.dart';
+import 'package:weaver_editor/components/draggble_block_wrapper.dart';
 import 'package:weaver_editor/delegates/block_manage_delegate.dart';
 import 'package:weaver_editor/editor_toolbar.dart';
 import 'package:weaver_editor/delegates/block_creator_delegate.dart';
@@ -121,15 +122,32 @@ class _WeaverEditorState extends State<WeaverEditor> {
     );
   }
 
+  // List<Widget> _interleaveBlock() {
+  //   final List<Widget> widgets = [const BlockControlWidget(index: 0)];
+
+  //   if (_blocks.isEmpty) return widgets;
+
+  //   for (int i = 0; i < _blocks.length; i++) {
+  //     widgets.addAll([_blocks[i] as Widget, BlockControlWidget(index: i + 1)]);
+  //   }
+
+  //   return widgets;
+  // }
+
   List<Widget> _interleaveBlock() {
     final List<Widget> widgets = [const BlockControlWidget(index: 0)];
 
     if (_blocks.isEmpty) return widgets;
 
     for (int i = 0; i < _blocks.length; i++) {
-      widgets.addAll([_blocks[i] as Widget, BlockControlWidget(index: i + 1)]);
+      widgets.addAll([
+        DragTargetWrapper(
+          key: ValueKey(_blocks[i].id),
+          index: i,
+        ),
+        BlockControlWidget(index: i + 1),
+      ]);
     }
-
     return widgets;
   }
 

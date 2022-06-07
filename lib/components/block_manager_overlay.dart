@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:weaver_editor/components/block_draggable_button.dart';
 import 'package:weaver_editor/components/outlined_text_button.dart';
 import 'package:weaver_editor/editor.dart';
 
@@ -184,7 +185,14 @@ class BlockManager extends TickerProvider {
               editorController.moveBlock(index, 1);
             }
           },
-        )
+        ),
+        if (canMoveDown)
+          BlockDraggableButton(
+            child: const Icon(Icons.swap_vert_outlined),
+            blockId: editorController.getBlockId(index),
+            onDragStart: _removeOverlay,
+            globalContext: context,
+          ),
       ],
     );
   }

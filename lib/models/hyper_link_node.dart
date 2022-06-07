@@ -59,6 +59,20 @@ class HyperLinkNode extends FormatNode {
     );
   }
 
+  @override
+  String toMap(String content, String result) {
+    final text = content.characters.getRange(range.start, range.end).string;
+
+    if (text.isNotEmpty) {
+      result += '<a href="$url">$text</a>';
+    }
+
+    if (next != null) {
+      result = next!.toMap(content, result);
+    }
+    return result;
+  }
+
   void _handleTap() {
     print('double tapped on Hyperlink: $url');
   }

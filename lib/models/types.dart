@@ -34,10 +34,12 @@ class BlockOperationEvent {
 class EmbedData {
   final String? url;
   final PlatformFile? file;
+  final String? caption;
 
   EmbedData({
     this.file,
     this.url,
+    this.caption,
   });
 
   bool get isValid => isValidUrl || file != null;

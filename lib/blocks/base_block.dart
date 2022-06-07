@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 ///   2) return itself if the block is [StatelessBlock]
 ///
 /// TODO: implement methods to serialize/deserialize [BaseBlock] to/from [Map]
-abstract class BaseBlock<T extends Element> {
+abstract class BaseBlock<T extends Element> with BaseBlockConvert {
   String get id;
 
   late T element;
@@ -69,4 +69,12 @@ class StatefulBlockElement extends StatefulElement {
 
 class StatelessBlockElement extends StatelessElement {
   StatelessBlockElement(StatelessBlock block) : super(block);
+}
+
+mixin BaseBlockConvert {
+  Map<String, dynamic> toMap();
+}
+
+abstract class BlockFactory {
+  BaseBlock fromMap(Map<String, dynamic> map);
 }

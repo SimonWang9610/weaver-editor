@@ -13,6 +13,24 @@ class BlockPreview extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Preview Blocks'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              final List<Map<String, dynamic>> data = [];
+
+              for (final block in blocks) {
+                data.add(block.toMap());
+              }
+
+              for (final ele in data) {
+                print(ele);
+              }
+            },
+            icon: const Icon(
+              Icons.print_outlined,
+            ),
+          ),
+        ],
       ),
       body: Center(
         child: Padding(

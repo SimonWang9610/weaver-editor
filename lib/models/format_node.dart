@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/models/hyper_link_node.dart';
 
+import '../delegates/node_converter_delegate.dart';
+
 import 'editing_selection.dart';
 import 'block_range.dart';
 import 'node_pair.dart';
@@ -37,6 +39,33 @@ class FormatNode {
     });
 
     return NodePair(nodes.first, trail: trail);
+  }
+
+  TextSpan build(String content) {
+    final text = content.characters.getRange(range.start, range.end).string;
+    print('$range: $text');
+    final chainedSpan = next?.build(content);
+
+    return TextSpan(
+      style: style,
+      text: text.isEmpty ? null : text,
+      children: [
+        if (chainedSpan != null) chainedSpan,
+      ],
+    );
+  }
+
+  String toMap(String content, String result) {
+    final text = content.characters.getRange(range.start, range.end).string;
+
+    if (text.isNotEmpty) {
+      result += style.toHtml(text);
+    }
+
+    if (next != null) {
+      result = next!.toMap(content, result);
+    }
+    return result;
   }
 
   void unlink() {
@@ -171,20 +200,6 @@ class FormatNode {
     }
 
     return null;
-  }
-
-  TextSpan build(String content) {
-    final text = content.characters.getRange(range.start, range.end).string;
-    print('$range: $text');
-    final chainedSpan = next?.build(content);
-
-    return TextSpan(
-      style: style,
-      text: text.isEmpty ? null : text,
-      children: [
-        if (chainedSpan != null) chainedSpan,
-      ],
-    );
   }
 
   bool notEndAt(int spot) {
