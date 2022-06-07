@@ -8,14 +8,19 @@ import 'base_block.dart';
 /// [buildForPreview] return [VideoBlock] directly
 /// TODO: to set custom aspect ratio of the [VideoPlayer]
 /// TODO: shoudl fallback to request vidoe resources if [videoUrl] not link to static video files
+/// TODO: support Youtube video
+/// TODO: add vidoe width & height
+/// TODO: enable video caption
 class VideoBlock extends StatefulBlock {
   final String? videoUrl;
   final PlatformFile? videoStream;
+  final String? caption;
   // final String id;
   VideoBlock({
     Key? key,
     this.videoUrl,
     this.videoStream,
+    this.caption,
     required String id,
   })  : assert(videoUrl != null || videoStream != null),
         super(key: key, id: id);
@@ -25,6 +30,19 @@ class VideoBlock extends StatefulBlock {
 
   @override
   late StatefulBlockElement element;
+
+  @override
+  Map<String, dynamic> toMap() => {
+        'type': 'embed',
+        'data': {
+          'service': 'local service',
+          'source': videoUrl ?? videoStream?.path,
+          'embed': videoUrl ?? videoStream?.path,
+          'width': 640,
+          'height': 428,
+          'caption': 'TODO'
+        }
+      };
 
   @override
   Widget buildForPreview() => this;

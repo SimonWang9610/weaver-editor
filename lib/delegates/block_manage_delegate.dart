@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter/widgets.dart';
 import 'package:weaver_editor/blocks/base_block.dart';
 
 import '../models/types.dart';
@@ -40,5 +40,38 @@ mixin BlockManageDelegate {
         index: srcIndex + step,
       ),
     );
+  }
+
+  BaseBlock getBlockById(String id) {
+    final block = blocks.singleWhere((element) => element.id == id);
+    return block;
+  }
+
+  Widget getBlockPreview(String id) {
+    final block = getBlockById(id);
+    return block.buildForPreview();
+  }
+
+  String getBlockId(int index) {
+    return blocks[index].id;
+  }
+
+  BaseBlock getBlockByIndex(int index) {
+    return blocks[index];
+  }
+
+  void moveBlockTo(String blockId, int dst) {
+    final src = blocks.indexWhere((element) => element.id == blockId);
+
+    if (src > -1) {
+      final block = blocks.removeAt(src);
+      blocks.insert(dst, block);
+      notifier.add(
+        BlockOperationEvent(
+          BlockOperation.reorder,
+          index: dst,
+        ),
+      );
+    }
   }
 }

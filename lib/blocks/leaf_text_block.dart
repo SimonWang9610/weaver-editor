@@ -37,6 +37,19 @@ class LeafTextBlock extends StatefulBlock {
       text: state._node.build(state.controller.text),
     );
   }
+
+  @override
+  Map<String, dynamic> toMap() {
+    final state = element.state as LeafTextBlockState;
+
+    return {
+      'type': 'paragraph',
+      'data': {
+        'text': state._node.toMap(state.controller.text, ''),
+        'alignment': state.align?.name ?? TextAlign.start.name,
+      }
+    };
+  }
 }
 
 class LeafTextBlockState extends BlockState<LeafTextBlock>
