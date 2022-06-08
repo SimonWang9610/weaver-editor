@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:weaver_editor/blocks/base_block.dart';
+import 'package:weaver_editor/components/animated_block_list.dart';
 import 'package:weaver_editor/components/draggble_block_wrapper.dart';
 import 'package:weaver_editor/delegates/block_manage_delegate.dart';
+import 'package:weaver_editor/delegates/editor_scroll_delegate.dart';
 import 'package:weaver_editor/editor_toolbar.dart';
 import 'package:weaver_editor/delegates/block_creator_delegate.dart';
 import 'package:weaver_editor/components/block_manager_overlay.dart';
 import 'package:weaver_editor/preview.dart';
+import 'package:weaver_editor/widgets/buttons/preview_button.dart';
 import 'widgets/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
 import 'models/types.dart';
@@ -29,42 +32,21 @@ class _WeaverEditorState extends State<WeaverEditor> {
   late final EditorController controller;
   late final StreamSubscription<BlockOperationEvent> _sub;
   final ScrollController _scrollController = ScrollController();
-
-  List<BaseBlock> _blocks = [];
+  final GlobalKey<AnimatedBlockListState> _listKey =
+      GlobalKey<AnimatedBlockListState>();
 
   @override
   void initState() {
     super.initState();
     controller = EditorController(widget.toolbar);
-    _blocks = controller.blocks;
 
     _sub = controller.listen(_handleBlockChange);
   }
 
   void _handleBlockChange(BlockOperationEvent event) {
-    setState(() {});
-    _scrollToIndexIfNeeded(event.index);
-  }
+    _listKey.currentState?.animateTo(event.index, event.operation);
 
-  void _scrollToIndexIfNeeded(int index) {
-    if (_blocks.length <= index) return;
-    // scroll to the target index when the list re-build completely
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        final oldOffset = _scrollController.offset;
-        final offset = controller.calculateScrollPosition(index);
-
-        if (offset >= oldOffset) {
-          _scrollController.animateTo(
-            offset,
-            duration: const Duration(
-              milliseconds: 200,
-            ),
-            curve: Curves.easeIn,
-          );
-        }
-      },
-    );
+    controller.scrollToIndexIfNeeded(_scrollController, event.index);
   }
 
   @override
@@ -78,99 +60,61 @@ class _WeaverEditorState extends State<WeaverEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Weaver Editor'),
-        actions: [
-          TextButton(
-            onPressed: _startPreview,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 2,
-                vertical: 2,
-              ),
-              child: Text('Preview'),
+    return GestureDetector(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Weaver Editor'),
+          actions: const [
+            EditorPreviewButton(),
+          ],
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 20,
+              horizontal: 10,
             ),
-            style: TextButton.styleFrom(
-              elevation: 5.0,
-              backgroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 20,
-            horizontal: 10,
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  controller: _scrollController,
-                  children: _interleaveBlock(),
+            child: Column(
+              children: [
+                Expanded(
+                  child: AnimatedBlockList(
+                    key: _listKey,
+                    initItemCount: controller.blocks.length,
+                    separatedBuilder: (_, index) => BlockControlWidget(
+                      index: index,
+                    ),
+                    itemBuilder: (_, index, animation) {
+                      return FadeTransition(
+                        key: ValueKey(controller.blocks[index].id),
+                        opacity: animation,
+                        child: DragTargetWrapper(
+                          index: index,
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-              EditorToolbarWidget(
-                toolbar: controller.toolbar,
-              ),
-            ],
+                EditorToolbarWidget(
+                  toolbar: controller.toolbar,
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    );
-  }
-
-  // List<Widget> _interleaveBlock() {
-  //   final List<Widget> widgets = [const BlockControlWidget(index: 0)];
-
-  //   if (_blocks.isEmpty) return widgets;
-
-  //   for (int i = 0; i < _blocks.length; i++) {
-  //     widgets.addAll([_blocks[i] as Widget, BlockControlWidget(index: i + 1)]);
-  //   }
-
-  //   return widgets;
-  // }
-
-  List<Widget> _interleaveBlock() {
-    final List<Widget> widgets = [const BlockControlWidget(index: 0)];
-
-    if (_blocks.isEmpty) return widgets;
-
-    for (int i = 0; i < _blocks.length; i++) {
-      widgets.addAll([
-        DragTargetWrapper(
-          key: ValueKey(_blocks[i].id),
-          index: i,
-        ),
-        BlockControlWidget(index: i + 1),
-      ]);
-    }
-    return widgets;
-  }
-
-  void _startPreview() {
-    if (_blocks.isEmpty) return;
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlockPreview(
-          blocks: _blocks,
-        ),
-      ),
+      onTap: controller.manager.removeOverlay,
     );
   }
 }
 
-class EditorController with BlockManageDelegate, BlockCreationDelegate {
+class EditorController
+    with BlockManageDelegate, BlockCreationDelegate, EditorScrollDelegate {
   final List<BaseBlock> _blocks;
   final EditorToolbar toolbar;
   final StreamController<BlockOperationEvent> _notifier =
       StreamController.broadcast();
 
-  late final BlockManager manager;
+  final BlockManager manager;
 
   EditorController(
     this.toolbar, {
@@ -203,6 +147,18 @@ class EditorController with BlockManageDelegate, BlockCreationDelegate {
   StreamSubscription<BlockOperationEvent> listen(
       void Function(BlockOperationEvent event) handler) {
     return _notifier.stream.listen(handler);
+  }
+
+  void startPreview(BuildContext context) {
+    if (_blocks.isEmpty) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlockPreview(
+          blocks: _blocks,
+        ),
+      ),
+    );
   }
 
   EditorToolbar attachBlock(BlockEditingController controller) {
@@ -248,18 +204,5 @@ class EditorController with BlockManageDelegate, BlockCreationDelegate {
         index: pos ?? blocks.length - 1,
       ),
     );
-  }
-
-  double calculateScrollPosition(int index) {
-    // used to calculate the new scroll offset
-    // after the blocks have some changes
-    double offset = 0;
-
-    for (int i = 0; i <= index; i++) {
-      final box = blocks[i].element.renderObject as RenderBox?;
-      offset += box?.size.height ?? 0 + 20;
-    }
-
-    return offset;
   }
 }

@@ -28,12 +28,14 @@ class BlockDraggableButton extends StatelessWidget {
       child: child,
       feedback: feedback.buildForPreview(),
       onDragStarted: onDragStart,
+      dragAnchor: DragAnchor.pointer,
       // dragAnchorStrategy: (draggable, __, position) {
-      //   print('feedback size: $feedbackSize');
-      //   print('position: $position');
-      //   final horizontalShift = position.dx - feedbackSize.width;
-      //   return draggable.feedbackOffset +
-      //       Offset(horizontalShift > 0 ? horizontalShift : 0, position.dy);
+      //   // print('feedback size: $feedbackSize');
+      //   // print('position: $position');
+      //   // final horizontalShift = position.dx - feedbackSize.width;
+      //   // return draggable.feedbackOffset +
+      //   //     Offset(horizontalShift > 0 ? horizontalShift : 0, position.dy);
+      //   return Offset(-feedbackSize.width, 0);
       // },
     );
   }

@@ -33,10 +33,10 @@ class BlockEditingController extends TextEditingController
     // compare the old value and new value to determine [BlockEditingStatus]
     final editingSelection = compare(newValue);
 
-    print('old value selection: ${value.selection}');
-    print('new value selection: ${newValue.selection}');
-    print('status: ${editingSelection.status}');
-    print('delta: ${editingSelection.delta}');
+    // print('old value selection: ${value.selection}');
+    // print('new value selection: ${newValue.selection}');
+    // print('status: ${editingSelection.status}');
+    // print('delta: ${editingSelection.delta}');
 
     // transform the operation of [BlockEditingStatus] to create/update [FormatNode]
     final styleMerged = _block.transform(editingSelection);

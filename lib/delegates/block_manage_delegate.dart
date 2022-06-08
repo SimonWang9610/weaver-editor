@@ -24,7 +24,7 @@ mixin BlockManageDelegate {
   }
 
   bool canMoveDown(int index) {
-    return index + 1 < blocks.length;
+    return index < blocks.length;
   }
 
   bool canDelete(int index) {
@@ -45,6 +45,10 @@ mixin BlockManageDelegate {
   BaseBlock getBlockById(String id) {
     final block = blocks.singleWhere((element) => element.id == id);
     return block;
+  }
+
+  int getBlockIndex(String id) {
+    return blocks.indexWhere((element) => element.id == id);
   }
 
   Widget getBlockPreview(String id) {

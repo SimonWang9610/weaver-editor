@@ -27,7 +27,7 @@ class BlockManager extends TickerProvider {
   }
 
   void dispose() {
-    _removeOverlay();
+    removeOverlay();
     _controller.dispose();
   }
 
@@ -37,10 +37,8 @@ class BlockManager extends TickerProvider {
     required int index,
     required OverlayDirection direction,
   }) {
-    EditorController.of(context).detachBlock();
-
     if (_overlay != null) {
-      _removeOverlay();
+      removeOverlay();
     }
 
     final RenderBox box = context.findRenderObject() as RenderBox;
@@ -102,7 +100,7 @@ class BlockManager extends TickerProvider {
     return _overlay!;
   }
 
-  void _removeOverlay() {
+  void removeOverlay() {
     _overlay?.remove();
     _overlay = null;
   }
@@ -115,21 +113,27 @@ class BlockManager extends TickerProvider {
             index: index,
             child: const Icon(Icons.text_fields),
             type: BlockType.paragraph,
-            beforePressed: _removeOverlay,
+            beforePressed: removeOverlay,
           ),
           BlockCreatorButton(
             globalContext: context,
             index: index,
             type: BlockType.image,
             child: const Icon(Icons.image),
-            beforePressed: _removeOverlay,
+            beforePressed: () {
+              EditorController.of(context).detachBlock();
+              removeOverlay();
+            },
           ),
           BlockCreatorButton(
             globalContext: context,
             index: index,
             type: BlockType.video,
             child: const Icon(Icons.video_camera_back),
-            beforePressed: _removeOverlay,
+            beforePressed: () {
+              EditorController.of(context).detachBlock();
+              removeOverlay();
+            },
           ),
         ],
       );
@@ -163,7 +167,7 @@ class BlockManager extends TickerProvider {
           child: deleteIcon,
           onPressed: () {
             if (canDelete) {
-              _removeOverlay();
+              removeOverlay();
               editorController.removeBlock(index);
             }
           },
@@ -172,7 +176,7 @@ class BlockManager extends TickerProvider {
           child: moveUpIcon,
           onPressed: () {
             if (canMoveUp) {
-              _removeOverlay();
+              removeOverlay();
               editorController.moveBlock(index, -1);
             }
           },
@@ -181,7 +185,7 @@ class BlockManager extends TickerProvider {
           child: moveDownIcon,
           onPressed: () {
             if (canMoveDown) {
-              _removeOverlay();
+              removeOverlay();
               editorController.moveBlock(index, 1);
             }
           },
@@ -190,7 +194,7 @@ class BlockManager extends TickerProvider {
           BlockDraggableButton(
             child: const Icon(Icons.swap_vert_outlined),
             blockId: editorController.getBlockId(index),
-            onDragStart: _removeOverlay,
+            onDragStart: removeOverlay,
             globalContext: context,
           ),
       ],

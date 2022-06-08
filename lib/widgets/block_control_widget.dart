@@ -31,7 +31,7 @@ class BlockControlWidget extends StatelessWidget {
             index: index,
             direction: OverlayDirection.right,
             icon: const Icon(
-              Icons.arrow_circle_left_outlined,
+              Icons.more_horiz_outlined,
               color: Colors.black,
             ),
           ),
