@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:weaver_editor/models/types.dart';
 import '../../editor.dart' show EditorController;
 
-class BlockOverlayButton extends StatelessWidget {
+class BlockOptionOverlay extends StatelessWidget {
   final int index;
   final Widget icon;
   final OverlayDirection direction;
-  const BlockOverlayButton({
+  const BlockOptionOverlay({
     Key? key,
     required this.index,
     required this.direction,

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/editor.dart';
 
@@ -12,10 +10,11 @@ class DragTargetWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final block = EditorController.of(context).getBlockByIndex(index);
-
     return DragTarget<String>(
-      builder: (_, __, ___) => block as Widget,
+      builder: (_, __, ___) {
+        final block = EditorController.of(context).getBlockByIndex(index);
+        return block as Widget;
+      },
       onAcceptWithDetails: (details) {
         final blockId = EditorController.of(context).getBlockId(index);
 

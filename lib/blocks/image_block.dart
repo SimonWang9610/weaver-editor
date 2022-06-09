@@ -18,19 +18,24 @@ class ImageBlock extends StatelessBlock {
   ImageBlock({
     Key? key,
     required String id,
+    String type = 'image',
     this.imageUrl,
     this.imageData,
     this.caption,
     this.screenScale = 0.6,
   })  : assert(imageUrl != null || imageData != null),
-        super(key: key, id: id);
+        super(
+          key: key,
+          id: id,
+          type: type,
+        );
 
   @override
   late StatelessBlockElement element;
 
   @override
   Map<String, dynamic> toMap() => {
-        'type': 'image',
+        'type': type,
         'data': {
           'file': imageUrl ?? imageData?.path,
         },

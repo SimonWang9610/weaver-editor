@@ -31,11 +31,11 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
   bool transform(BlockEditingSelection selection) {
     if (attachedToolbar == null) return false;
 
-    print('^^^^^^^^^^^^^^^update format nodes^^^^^^^^^^^^^^^^');
+    // print('^^^^^^^^^^^^^^^update format nodes^^^^^^^^^^^^^^^^');
     final pair = findNodesBySelection(selection);
 
-    print('found pair: $pair');
-    print(' status: ${selection.status}');
+    // print('found pair: $pair');
+    // print(' status: ${selection.status}');
     assert(pair.isPaired(), 'operation must be on a paired path');
 
     switch (selection.status) {
@@ -58,7 +58,7 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
         break;
     }
 
-    print('^^^^^^^^^^^^end^^^^^^^^^^^^^^^^^^');
+    // print('^^^^^^^^^^^^end^^^^^^^^^^^^^^^^^^');
 
     return pair.isMerged();
   }

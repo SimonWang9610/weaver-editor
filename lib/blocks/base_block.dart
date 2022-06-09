@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 abstract class BaseBlock<T extends Element> with BaseBlockConvert {
   String get id;
 
+  String get type;
   late T element;
 
   Widget buildForPreview();
@@ -23,9 +24,12 @@ abstract class StatefulBlock extends StatefulWidget
     implements BaseBlock<StatefulBlockElement> {
   @override
   final String id;
+  @override
+  final String type;
   StatefulBlock({
     Key? key,
     required this.id,
+    required this.type,
   }) : super(key: key);
 
   @override
@@ -47,9 +51,13 @@ abstract class StatelessBlock extends StatelessWidget
     implements BaseBlock<StatelessBlockElement> {
   @override
   final String id;
+  @override
+  final String type;
+
   StatelessBlock({
     Key? key,
     required this.id,
+    required this.type,
   }) : super(key: key);
 
   @override

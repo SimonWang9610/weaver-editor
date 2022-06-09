@@ -17,13 +17,14 @@ class OutlinedTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: onPressed,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 2,
-          vertical: 2,
-        ),
-        child: child,
-      ),
+      // child: Padding(
+      //   padding: const EdgeInsets.symmetric(
+      //     horizontal: 0,
+      //     vertical: 2,
+      //   ),
+      //   child: child,
+      // ),
+      child: child,
       style: enableOutlineBorder
           ? style ??
               TextButton.styleFrom(

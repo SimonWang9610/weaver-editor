@@ -12,6 +12,7 @@ enum BlockType {
   list,
   image,
   video,
+  header,
 }
 
 enum BlockOperation {
@@ -23,6 +24,27 @@ enum BlockOperation {
 enum OverlayDirection {
   left,
   right,
+}
+
+enum HeaderLine {
+  level1(96),
+  level2(60),
+  level3(48);
+
+  final double size;
+  const HeaderLine(this.size);
+}
+
+class HyperLinkData {
+  final String url;
+  final String caption;
+  final int? pos;
+
+  HyperLinkData(
+    this.url, {
+    required this.caption,
+    this.pos,
+  });
 }
 
 class BlockOperationEvent {

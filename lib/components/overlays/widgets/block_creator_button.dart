@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../components/outlined_text_button.dart';
-import '../../models/types.dart';
-import '../../editor.dart' show EditorController;
-import '../block_embed_widget.dart';
+import '../../outlined_text_button.dart';
+import '../../../models/types.dart';
+import '../../../editor.dart' show EditorController;
+import '../../../widgets/block_embed_widget.dart';
 
 class BlockCreatorButton extends StatelessWidget {
   final BuildContext? globalContext;
@@ -28,10 +28,11 @@ class BlockCreatorButton extends StatelessWidget {
 
         switch (type) {
           case BlockType.paragraph:
+          case BlockType.header:
             final editorController =
                 EditorController.of(globalContext ?? context);
 
-            editorController.insertBlock(BlockType.paragraph, pos: index);
+            editorController.insertBlock(type, pos: index);
             break;
           case BlockType.image:
           case BlockType.video:

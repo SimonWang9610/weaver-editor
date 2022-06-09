@@ -31,6 +31,7 @@ class MyHomePage extends StatelessWidget {
 
     return WeaverEditor(
       toolbar: EditorToolbar(style),
+      defaultStyle: style,
     );
   }
 }

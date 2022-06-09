@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/blocks/base_block.dart';
 import 'package:nanoid/nanoid.dart';
+import 'package:weaver_editor/blocks/head_block.dart';
 import 'package:weaver_editor/blocks/image_block.dart';
 import 'package:weaver_editor/blocks/video_block.dart';
 import 'package:weaver_editor/blocks/leaf_text_block.dart';
@@ -15,7 +16,20 @@ mixin BlockCreationDelegate {
       id: id,
       key: ValueKey(id),
       style: defaultStyle,
-      type: 'paragraph',
+    );
+  }
+
+  BaseBlock createHeaderBlock() {
+    final id = generateId();
+
+    return HeaderBlock(
+      id: id,
+      key: ValueKey(id),
+      style: TextStyle(
+        color: Colors.black,
+        fontWeight: FontWeight.bold,
+        fontSize: HeaderLine.level2.size,
+      ),
     );
   }
 

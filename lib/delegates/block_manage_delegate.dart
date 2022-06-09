@@ -47,6 +47,10 @@ mixin BlockManageDelegate {
     return block;
   }
 
+  int getBlockIndex(String id) {
+    return blocks.indexWhere((element) => element.id == id);
+  }
+
   Widget getBlockPreview(String id) {
     final block = getBlockById(id);
     return block.buildForPreview();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../models/types.dart';
 
 class HyperLinkButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -113,16 +114,4 @@ class _HyperLinkFormState extends State<HyperLinkForm> {
       ),
     );
   }
-}
-
-class HyperLinkData {
-  final String url;
-  final String caption;
-  final int? pos;
-
-  HyperLinkData(
-    this.url, {
-    required this.caption,
-    this.pos,
-  });
 }

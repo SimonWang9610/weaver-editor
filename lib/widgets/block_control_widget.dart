@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/models/types.dart';
 
-import 'buttons/block_overlay_button.dart';
+import '../components/overlays/block_option_overlay.dart';
 
 class BlockControlWidget extends StatelessWidget {
   final int index;
@@ -19,7 +19,7 @@ class BlockControlWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          BlockOverlayButton(
+          BlockOptionOverlay(
             index: index,
             direction: OverlayDirection.left,
             icon: const Icon(
@@ -27,11 +27,11 @@ class BlockControlWidget extends StatelessWidget {
               color: Colors.greenAccent,
             ),
           ),
-          BlockOverlayButton(
+          BlockOptionOverlay(
             index: index,
             direction: OverlayDirection.right,
             icon: const Icon(
-              Icons.arrow_circle_left_outlined,
+              Icons.more_horiz_outlined,
               color: Colors.black,
             ),
           ),
