@@ -41,13 +41,24 @@ class FormatNode {
     return NodePair(nodes.first, trail: trail);
   }
 
-  TextSpan build(String content) {
+  void synchronize(TextStyle? newStyle) {
+    if (newStyle != null) {
+      style = newStyle;
+      next?.synchronize(newStyle);
+    }
+  }
+
+  TextSpan build(String content, {TextStyle? forcedStyle}) {
     final text = content.characters.getRange(range.start, range.end).string;
-    print('$range: $text');
-    final chainedSpan = next?.build(content);
+    // print('$range: $text');
+
+    final chainedSpan = next?.build(
+      content,
+      forcedStyle: forcedStyle,
+    );
 
     return TextSpan(
-      style: style,
+      style: forcedStyle ?? style,
       text: text.isEmpty ? null : text,
       children: [
         if (chainedSpan != null) chainedSpan,

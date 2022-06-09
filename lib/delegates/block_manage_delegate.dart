@@ -24,7 +24,7 @@ mixin BlockManageDelegate {
   }
 
   bool canMoveDown(int index) {
-    return index < blocks.length;
+    return index + 1 < blocks.length;
   }
 
   bool canDelete(int index) {

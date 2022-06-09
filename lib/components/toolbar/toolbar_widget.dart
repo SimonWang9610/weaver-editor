@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/widgets/buttons/add_link_button.dart';
-import '../editor_toolbar.dart';
-import 'buttons/format_button.dart';
+import 'package:weaver_editor/components/toolbar/block_format_widget.dart';
+import 'package:weaver_editor/components/toolbar/block_header_widget.dart';
+import 'package:weaver_editor/components/overlays/block_align_overlay.dart';
+import '../../editor_toolbar.dart';
 
 class EditorToolbarWidget extends StatefulWidget {
   final EditorToolbar toolbar;
@@ -19,6 +20,7 @@ class EditorToolbarWidget extends StatefulWidget {
 class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
   late final StreamSubscription _sub;
   late TextStyle _currentStyle;
+  String type = 'paragraph';
 
   @override
   void initState() {
@@ -46,7 +48,6 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    // TODO: enable change block align
 
     return SizedBox(
       width: size.width,
@@ -55,40 +56,15 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            FormatButton(
-              backgroundColor: _currentStyle.fontWeight == FontWeight.w900
-                  ? Colors.grey
-                  : null,
-              onPressed: widget.toolbar.boldText,
-              icon: const Icon(
-                Icons.format_bold_outlined,
-                color: Colors.black,
-              ),
-            ),
-            FormatButton(
-              backgroundColor: _currentStyle.fontStyle == FontStyle.italic
-                  ? Colors.grey
-                  : null,
-              onPressed: widget.toolbar.italicText,
-              icon: const Icon(
-                Icons.format_italic_outlined,
-                color: Colors.black,
-              ),
-            ),
-            FormatButton(
-              backgroundColor:
-                  _currentStyle.decoration == TextDecoration.underline
-                      ? Colors.grey
-                      : null,
-              onPressed: widget.toolbar.underlineText,
-              icon: const Icon(
-                Icons.format_underline_outlined,
-                color: Colors.black,
-              ),
-            ),
-            HyperLinkButton(
-              onPressed: () => widget.toolbar.addLinkInFocusedBlock(context),
-            ),
+            type == 'paragraph'
+                ? BlockFormatWidget(
+                    style: _currentStyle,
+                    toolbar: widget.toolbar,
+                  )
+                : BlockHeaderWidget(
+                    toolbar: widget.toolbar,
+                  ),
+            const BlockAlignOverlay(),
           ],
         ),
       ),
@@ -97,6 +73,7 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
 
   void _handleToolbarStyleChange(ToolbarEvent event) {
     _currentStyle = widget.toolbar.style;
+    type = widget.toolbar.blockType ?? 'paragraph';
     setState(() {});
   }
 }

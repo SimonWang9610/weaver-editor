@@ -17,10 +17,14 @@ class LeafTextBlock extends StatefulBlock {
   // final String id;
   LeafTextBlock({
     Key? key,
+    this.type = 'paragraph',
     required this.style,
-    required this.type,
     required String id,
-  }) : super(key: key, id: id);
+  }) : super(
+          key: key,
+          id: id,
+          type: type,
+        );
 
   @override
   BlockState<LeafTextBlock> createState() => LeafTextBlockState();
@@ -45,7 +49,7 @@ class LeafTextBlock extends StatefulBlock {
     return {
       'type': 'paragraph',
       'data': {
-        'text': state._node.toMap(state.controller.text, ''),
+        'text': state.headNode.toMap(state.controller.text, ''),
         'alignment': state.align?.name ?? TextAlign.start.name,
       }
     };
@@ -117,6 +121,8 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
   @override
   Widget build(BuildContext context) {
     print('build text block: ${widget.key}');
+
+    super.build(context);
 
     return TextField(
       strutStyle: strut,

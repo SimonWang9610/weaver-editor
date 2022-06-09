@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/widgets/buttons/add_link_button.dart';
+import 'package:weaver_editor/blocks/head_block.dart';
+import 'package:weaver_editor/models/types.dart';
 import 'package:weaver_editor/blocks/leaf_text_block.dart';
 
-import 'controller_delegates.dart';
+import 'editing_compare.dart';
+import 'toolbar_change_delegate.dart';
 
 class BlockEditingController extends TextEditingController
-    with BlockEditingCompare {
+    with ToolbarChangeDelegate, BlockEditingCompare {
   final LeafTextBlockState _block;
 
   BlockEditingController({
@@ -15,6 +17,18 @@ class BlockEditingController extends TextEditingController
         super(text: text);
 
   @override
+  LeafTextBlockState get block => _block;
+
+  String get blockType => _block.widget.type;
+  HeaderLine? get headerLevel {
+    if (isHeaderBlock) {
+      return (block as HeaderBlockState).level;
+    } else {
+      return null;
+    }
+  }
+
+  @override
   TextSpan buildTextSpan({
     required BuildContext context,
     TextStyle? style,
@@ -22,10 +36,20 @@ class BlockEditingController extends TextEditingController
   }) {
     // avoid throw exception when first focusing on the new created block
     if (!_block.headNode.range.isValid) {
-      return TextSpan(style: _block.headNode.style, text: text);
+      return TextSpan(style: _block.widget.style, text: text);
     }
 
-    return _block.headNode.build(value.text);
+    TextStyle? forcedStyle;
+
+    if (isHeaderBlock) {
+      //forcedStyle = _block.widget.style;
+      _block.headNode.synchronize(_block.headNode.style);
+    }
+
+    return _block.headNode.build(
+      value.text,
+      forcedStyle: forcedStyle,
+    );
   }
 
   @override
@@ -44,23 +68,6 @@ class BlockEditingController extends TextEditingController
     if (value != newValue || styleMerged) {
       super.value = newValue;
     }
-  }
-
-  // will update value or style by EditorToolbar state
-  void mayApplyStyle() {
-    if (!selection.isCollapsed) {
-      value = value.copyWith();
-    }
-  }
-
-  void unfocus() {
-    if (_block.focus.hasFocus) {
-      _block.focus.unfocus();
-    }
-  }
-
-  void setAlign(TextAlign newAlign) {
-    _block.setAlign(newAlign);
   }
 
   void insertLinkNode(HyperLinkData? data) {

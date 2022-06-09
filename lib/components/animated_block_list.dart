@@ -65,6 +65,12 @@ class AnimatedBlockListState extends State<AnimatedBlockList>
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return CustomScrollView(
       scrollDirection: widget.scrollDirection,
@@ -155,7 +161,7 @@ class AnimatedBlockListState extends State<AnimatedBlockList>
             curve: Curves.easeInCubic,
           );
     } else {
-      return const AlwaysStoppedAnimation<double>(1);
+      return AlwaysStoppedAnimation<double>(_controller.upperBound);
     }
   }
 }

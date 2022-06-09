@@ -44,7 +44,10 @@ class HyperLinkNode extends FormatNode {
   }
 
   @override
-  TextSpan build(String content) {
+  TextSpan build(
+    String content, {
+    TextStyle? forcedStyle,
+  }) {
     final caption = content.characters.getRange(range.start, range.end).string;
 
     final chainedSpan = next?.build(content);

@@ -9,19 +9,21 @@ import 'package:weaver_editor/delegates/block_manage_delegate.dart';
 import 'package:weaver_editor/delegates/editor_scroll_delegate.dart';
 import 'package:weaver_editor/editor_toolbar.dart';
 import 'package:weaver_editor/delegates/block_creator_delegate.dart';
-import 'package:weaver_editor/components/block_manager_overlay.dart';
+import 'package:weaver_editor/components/overlays/overlay_manager.dart';
 import 'package:weaver_editor/preview.dart';
-import 'package:weaver_editor/widgets/buttons/preview_button.dart';
-import 'widgets/toolbar_widget.dart';
+import 'package:weaver_editor/widgets/preview_button.dart';
+import 'components/toolbar/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
 import 'models/types.dart';
 import 'widgets/block_control_widget.dart';
 
 class WeaverEditor extends StatefulWidget {
   final EditorToolbar toolbar;
+  final TextStyle defaultStyle;
   const WeaverEditor({
     Key? key,
     required this.toolbar,
+    required this.defaultStyle,
   }) : super(key: key);
 
   @override
@@ -38,7 +40,10 @@ class _WeaverEditorState extends State<WeaverEditor> {
   @override
   void initState() {
     super.initState();
-    controller = EditorController(widget.toolbar);
+    controller = EditorController(
+      widget.toolbar,
+      defaultStyle: widget.defaultStyle,
+    );
 
     _sub = controller.listen(_handleBlockChange);
   }
@@ -79,6 +84,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
                 Expanded(
                   child: AnimatedBlockList(
                     key: _listKey,
+                    scrollController: _scrollController,
                     initItemCount: controller.blocks.length,
                     separatedBuilder: (_, index) => BlockControlWidget(
                       index: index,
@@ -111,6 +117,7 @@ class EditorController
     with BlockManageDelegate, BlockCreationDelegate, EditorScrollDelegate {
   final List<BaseBlock> _blocks;
   final EditorToolbar toolbar;
+  final TextStyle defaultStyle;
   final StreamController<BlockOperationEvent> _notifier =
       StreamController.broadcast();
 
@@ -118,6 +125,7 @@ class EditorController
 
   EditorController(
     this.toolbar, {
+    required this.defaultStyle,
     List<BaseBlock>? initBlocks,
   })  : _blocks = initBlocks ?? [],
         manager = BlockManager();
@@ -178,7 +186,10 @@ class EditorController
 
     switch (type) {
       case BlockType.paragraph:
-        block = createParagraphBlock(toolbar.style);
+        block = createParagraphBlock(defaultStyle);
+        break;
+      case BlockType.header:
+        block = createHeaderBlock();
         break;
       case BlockType.image:
         block = createImageBlock(data!);
