@@ -7,6 +7,10 @@ import 'package:weaver_editor/editor.dart';
 
 import 'package:weaver_editor/models/types.dart';
 
+/// We need to align [_overlay] to the global origin
+/// this is why we need to use [Align] or [Positioned] to wrap [CompositedTransformFollower]
+/// so that the [targetAnchor] and [followedAnchor] of [CompositedTransformFollower] can work correctly
+/// [offset] of [CompositedTransformFollower] will work with [followedAnchor]
 class BlockManager extends TickerProvider {
   BlockManager() {
     _controller = AnimationController(

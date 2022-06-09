@@ -39,7 +39,7 @@ class BlockManageWidget extends StatelessWidget {
 
     return Row(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         OutlinedTextButton(
           child: deleteIcon,
