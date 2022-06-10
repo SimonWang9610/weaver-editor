@@ -98,10 +98,6 @@ class BlockManager extends TickerProvider {
       removeOverlay();
     }
 
-    final RenderBox box = context.findRenderObject() as RenderBox;
-
-    final size = box.size;
-
     final toolbar = EditorController.of(context).toolbar;
 
     _createOverlay(
@@ -113,6 +109,7 @@ class BlockManager extends TickerProvider {
       link,
       targetAnchor: Alignment.topCenter,
       followedAnchor: Alignment.bottomCenter,
+      axis: Axis.vertical,
     );
 
     _controller.reset();
@@ -125,31 +122,56 @@ class BlockManager extends TickerProvider {
     LayerLink link, {
     Alignment targetAnchor = Alignment.topLeft,
     Alignment followedAnchor = Alignment.topLeft,
-    Alignment globalAnchor = Alignment.topLeft,
     Offset offset = Offset.zero,
+    Axis axis = Axis.horizontal,
   }) {
+    // _overlay = OverlayEntry(
+    //   builder: (_) => Align(
+    //     child: CompositedTransformFollower(
+    //       link: link,
+    //       showWhenUnlinked: false,
+    //       targetAnchor: targetAnchor,
+    //       followerAnchor: followedAnchor,
+    //       offset: offset,
+    //       child: SizeTransition(
+    //         sizeFactor: CurvedAnimation(
+    //           parent: _controller,
+    //           curve: Curves.linearToEaseOut,
+    //         ),
+    //         child: child,
+    //       ),
+    //     ),
+    //     alignment: globalAnchor,
+    //   ),
+    // );
+
     _overlay = OverlayEntry(
-      builder: (_) => Align(
+      builder: (_) => Positioned(
+        left: 0,
+        top: 0,
         child: CompositedTransformFollower(
           link: link,
           showWhenUnlinked: false,
           targetAnchor: targetAnchor,
           followerAnchor: followedAnchor,
           offset: offset,
-          child: ScaleTransition(
-            scale: CurvedAnimation(
+          child: SizeTransition(
+            axis: axis,
+            sizeFactor: CurvedAnimation(
               parent: _controller,
               curve: Curves.linearToEaseOut,
             ),
             child: child,
           ),
         ),
-        alignment: globalAnchor,
       ),
     );
   }
 
-  void removeOverlay() {
+  void removeOverlay({bool playReverseAnimation = false}) {
+    if (playReverseAnimation) {
+      _controller.reverse();
+    }
     _overlay?.remove();
     _overlay = null;
   }

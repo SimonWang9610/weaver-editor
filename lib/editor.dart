@@ -108,7 +108,9 @@ class _WeaverEditorState extends State<WeaverEditor> {
           ),
         ),
       ),
-      onTap: controller.manager.removeOverlay,
+      onTap: () => controller.manager.removeOverlay(
+        playReverseAnimation: true,
+      ),
     );
   }
 }

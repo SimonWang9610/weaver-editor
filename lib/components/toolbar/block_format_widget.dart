@@ -45,7 +45,10 @@ class BlockFormatWidget extends StatelessWidget {
           ),
         ),
         HyperLinkButton(
-          onPressed: () => toolbar.addLinkInFocusedBlock(context),
+          onPressed: () {
+            if (toolbar.attachedController == null) return;
+            toolbar.addLinkInFocusedBlock(context);
+          },
         ),
       ],
     );

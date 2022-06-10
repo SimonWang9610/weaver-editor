@@ -73,6 +73,8 @@ class EditorToolbar extends BaseToolbar with InlineHyperLinkCreator {
 
   @override
   EditorToolbar attach(BlockEditingController controller) {
+    // TODO: synchronize the align of blocks
+
     if (controller.headerLevel != null) {
       level = controller.headerLevel!;
     }
