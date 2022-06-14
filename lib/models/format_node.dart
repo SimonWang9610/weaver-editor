@@ -50,7 +50,7 @@ class FormatNode {
 
   TextSpan build(String content, {TextStyle? forcedStyle}) {
     final text = content.characters.getRange(range.start, range.end).string;
-    // print('$range: $text');
+    // print('$range: $text, style: $style');
 
     final chainedSpan = next?.build(
       content,

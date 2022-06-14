@@ -86,6 +86,19 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
   void initState() {
     super.initState();
 
+    // final TextEditingValue value = widget.text == null
+    //     ? TextEditingValue.empty
+    //     : TextEditingValue(
+    //         text: widget.text!,
+    //         selection: TextSelection.collapsed(
+    //           offset: widget.text!.characters.length,
+    //         ),
+    //       );
+
+    // controller = BlockEditingController.fromValue(
+    //   block: this,
+    //   value: value,
+    // );
     controller = BlockEditingController(
       block: this,
       text: widget.text,
@@ -140,6 +153,7 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
     super.build(context);
 
     return TextField(
+      enabled: true,
       strutStyle: strut,
       style: widget.style,
       textAlign: align ?? TextAlign.start,

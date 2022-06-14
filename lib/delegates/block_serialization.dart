@@ -19,9 +19,11 @@ class BlockDeserializer with DeserializerHelper {
     for (final match in matchedTags) {
       final tag = source.substring(match.start, match.end);
 
-      if (stack.isEmpty && match.start > 0) {
+      final anchor = previousMatched?.end ?? 0;
+
+      if (stack.isEmpty && match.start > anchor) {
         node = ParsedNode(
-          source.substring(0, match.start),
+          source.substring(anchor, match.start),
           tags: const [],
         );
       } else if (stack.isNotEmpty) {
@@ -53,13 +55,18 @@ class BlockDeserializer with DeserializerHelper {
       previousMatched = match;
 
       if (node != null) {
+        print('node: $node');
         parsed.add(node);
         node = null;
       }
     }
 
-    if (previousMatched!.end != source.length) {
-      node = ParsedNode(source.substring(previousMatched.end), tags: const []);
+    if (previousMatched == null || previousMatched.end != source.length) {
+      node = ParsedNode(
+        source.substring(previousMatched?.end ?? 0),
+        tags: const [],
+      );
+
       parsed.add(node);
     }
 

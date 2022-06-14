@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/blocks/base_block.dart';
+import 'package:weaver_editor/storage/editor_provider.dart';
 
 class BlockPreview extends StatelessWidget {
   final List<BaseBlock> blocks;
+  final String title;
+  final String id;
   const BlockPreview({
     Key? key,
     required this.blocks,
+    required this.id,
+    required this.title,
   }) : super(key: key);
 
   @override
@@ -15,19 +20,13 @@ class BlockPreview extends StatelessWidget {
         title: const Text('Preview Blocks'),
         actions: [
           IconButton(
-            onPressed: () {
-              final List<Map<String, dynamic>> data = [];
+            onPressed: () async {
+              final result = await EditorProvider().save(id, title, blocks);
 
-              for (final block in blocks) {
-                data.add(block.toMap());
-              }
-
-              for (final ele in data) {
-                print(ele);
-              }
+              print('save $result publication of $title');
             },
             icon: const Icon(
-              Icons.print_outlined,
+              Icons.save_alt_outlined,
             ),
           ),
         ],

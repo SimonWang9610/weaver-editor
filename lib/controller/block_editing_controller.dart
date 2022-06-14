@@ -16,6 +16,12 @@ class BlockEditingController extends TextEditingController
   })  : _block = block,
         super(text: text);
 
+  BlockEditingController.fromValue({
+    TextEditingValue? value,
+    required LeafTextBlockState block,
+  })  : _block = block,
+        super.fromValue(value);
+
   @override
   LeafTextBlockState get block => _block;
 
@@ -46,6 +52,7 @@ class BlockEditingController extends TextEditingController
       _block.headNode.synchronize(_block.headNode.style);
     }
 
+    print('headNode: ${_block.headNode}');
     return _block.headNode.build(
       value.text,
       forcedStyle: forcedStyle,

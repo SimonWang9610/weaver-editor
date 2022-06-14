@@ -25,6 +25,7 @@ mixin BlockCreationDelegate {
     return HeaderBlock(
       id: id,
       key: ValueKey(id),
+      align: TextAlign.center,
       style: TextStyle(
         color: Colors.black,
         fontWeight: FontWeight.bold,

@@ -1,41 +1,68 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import 'package:weaver_editor/blocks/block_factory.dart';
 
 import '../blocks/base_block.dart';
 
+typedef BlockData = Map<String, dynamic>;
+
 class Publication {
   final List<BaseBlock> blocks;
+  final BlockData blockData;
   final String id;
   final String title;
+  final int lastUpdate;
   Publication(
     this.id,
     this.title, {
-    required this.blocks,
+    this.blocks = const [],
+    this.blockData = const {},
+    required this.lastUpdate,
   });
 
   factory Publication.fromMap(Map<String, dynamic> map) {
     final String id = map['id'];
     final String title = map['title'];
-    final Map<int, dynamic> content = json.decode(map['content']);
+    final Map<String, dynamic> content = jsonDecode(map['content']);
 
-    final List<BaseBlock> blocks = [];
+    // print(content);
 
-    for (final key in content.keys.toList()..sort()) {
-      blocks.add(content[key]);
-    }
-    return Publication(id, title, blocks: blocks);
+    return Publication(
+      id,
+      title,
+      lastUpdate: map['lastUpdate'],
+      blockData: content,
+    );
+
+    // final List<BaseBlock> blocks = List.generate(
+    //   content.length,
+    //   (index) {
+    //     final block = content['$index'];
+
+    //     return BlockFactory().fromMap(block);
+    //   },
+    // );
+
+    // return Publication(
+    //   id,
+    //   title,
+    //   blocks: blocks,
+    //   lastUpdate: map['lastUpdate'],
+    // );
   }
 
   String get content {
-    final Map<int, String> content = {};
+    final Map<String, dynamic> content = {};
 
     for (int i = 0; i < blocks.length; i++) {
-      content[i] = json.encode(blocks[i].toMap());
+      final block = blocks[i].toMap();
+      content['$i'] = block;
     }
-    return json.encode(content);
+    print(content);
+    return jsonEncode(content);
   }
-
-  int get lastUpdate => DateTime.now().millisecondsSinceEpoch;
 
   Map<String, dynamic> toMap() {
     return {
@@ -48,6 +75,7 @@ class Publication {
 }
 
 class EditorProvider {
+  static const String dbName = 'publications.db';
   static const String editorTable = 'publications';
   static final EditorProvider _instance = EditorProvider._();
 
@@ -57,19 +85,22 @@ class EditorProvider {
 
   late Database _db;
 
-  Future<void> init(String path, {int version = 1}) async {
+  Future<void> init({int version = 1}) async {
+    final path = await getDatabasesPath();
+
     _db = await openDatabase(
-      path,
+      join(path, dbName),
       version: version,
       onCreate: _createDatabase,
     );
   }
 
-  Future<int> upsert(String id, String title, List<BaseBlock> blocks) async {
+  Future<int> save(String id, String title, List<BaseBlock> blocks) async {
     final publication = Publication(
       id,
       title,
       blocks: blocks,
+      lastUpdate: DateTime.now().millisecondsSinceEpoch,
     );
 
     final updates = {
@@ -97,9 +128,35 @@ class EditorProvider {
         return updated;
       }
     } catch (e) {
-      print(e);
-      rethrow;
+      throw ErrorDescription('Error on upserts: $e');
     }
+  }
+
+  Future<int> clearAllPublications() async {
+    final result = await _db.delete(
+      editorTable,
+    );
+    return result;
+  }
+
+  Future<List<Publication>> getAllPublications(int offset,
+      [int limit = 10]) async {
+    final List<Publication> publications = [];
+
+    final results = await _db.query(
+      editorTable,
+      orderBy: 'lastUpdate DESC',
+      limit: 10,
+      offset: offset,
+    );
+
+    for (final map in results) {
+      print(map);
+
+      publications.add(Publication.fromMap(map));
+    }
+
+    return publications;
   }
 
   Future<void> _createDatabase(Database db, int version) async {

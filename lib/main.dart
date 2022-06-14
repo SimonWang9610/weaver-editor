@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/editor.dart';
-import 'package:weaver_editor/editor_toolbar.dart';
+import 'package:weaver_editor/publications/publication_screen.dart';
+import 'package:weaver_editor/storage/editor_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await EditorProvider().init();
+
   runApp(const MyApp());
 }
 
@@ -17,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: const PublicationScreen(),
     );
   }
 }
@@ -27,12 +31,6 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.titleMedium ?? const TextStyle();
-
-    return WeaverEditor(
-      title: 'editor',
-      toolbar: EditorToolbar(style),
-      defaultStyle: style,
-    );
+    return PublicationScreen();
   }
 }

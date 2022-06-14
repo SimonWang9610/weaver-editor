@@ -47,7 +47,9 @@ class AnimatedBlockListState extends State<AnimatedBlockList>
   late bool _itemIndexEven;
 
   late int _itemCount;
-  int _activeItemIndex = 0;
+  // the first build will not play animation
+  // so [_activeItemIndex] should be null
+  int? _activeItemIndex;
 
   @override
   void initState() {
