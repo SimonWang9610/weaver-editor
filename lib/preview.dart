@@ -32,22 +32,20 @@ class BlockPreview extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 20,
-            horizontal: 10,
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: blocks.length,
-                  itemBuilder: (_, index) => blocks[index].buildForPreview(),
-                ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: 20,
+          horizontal: 20,
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: blocks.length,
+                itemBuilder: (_, index) => blocks[index].buildForPreview(),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

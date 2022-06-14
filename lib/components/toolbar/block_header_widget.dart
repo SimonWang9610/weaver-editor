@@ -18,30 +18,36 @@ class BlockHeaderWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         FormatButton(
-          backgroundColor:
-              headerLevel == HeaderLine.level1 ? Colors.grey : null,
+          backgroundColor: headerLevel == HeaderLine.level1
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           icon: const Text(
             'H1',
+            style: TextStyle(color: Colors.black),
           ),
           onPressed: () {
             toolbar.updateLevel(HeaderLine.level1);
           },
         ),
         FormatButton(
-          backgroundColor:
-              headerLevel == HeaderLine.level2 ? Colors.grey : null,
+          backgroundColor: headerLevel == HeaderLine.level2
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           icon: const Text(
             'H2',
+            style: TextStyle(color: Colors.black),
           ),
           onPressed: () {
             toolbar.updateLevel(HeaderLine.level2);
           },
         ),
         FormatButton(
-          backgroundColor:
-              headerLevel == HeaderLine.level3 ? Colors.grey : null,
+          backgroundColor: headerLevel == HeaderLine.level3
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           icon: const Text(
             'H3',
+            style: TextStyle(color: Colors.black),
           ),
           onPressed: () {
             toolbar.updateLevel(HeaderLine.level3);

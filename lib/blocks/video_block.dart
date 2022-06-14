@@ -13,17 +13,17 @@ import 'base_block.dart';
 /// TODO: enable video caption
 class VideoBlock extends StatefulBlock {
   final String? videoUrl;
-  final PlatformFile? videoStream;
+  final String? videoPath;
   final String? caption;
   // final String id;
   VideoBlock({
     Key? key,
     this.videoUrl,
-    this.videoStream,
+    this.videoPath,
     this.caption,
     required String id,
     String type = 'video',
-  })  : assert(videoUrl != null || videoStream != null),
+  })  : assert(videoUrl != null || videoPath != null),
         super(
           key: key,
           id: id,
@@ -38,11 +38,13 @@ class VideoBlock extends StatefulBlock {
 
   @override
   Map<String, dynamic> toMap() => {
+        'id': id,
         'type': 'embed',
+        'time': DateTime.now().millisecondsSinceEpoch,
         'data': {
           'service': 'local service',
-          'source': videoUrl ?? videoStream?.path,
-          'embed': videoUrl ?? videoStream?.path,
+          'source': videoUrl ?? videoPath,
+          'embed': videoUrl ?? videoPath,
           'width': 640,
           'height': 428,
           'caption': 'TODO'
@@ -65,7 +67,7 @@ class VideoBlockState extends BlockState<VideoBlock> {
     if (widget.videoUrl != null) {
       _controller = VideoPlayerController.network(widget.videoUrl!);
     } else {
-      final file = File(widget.videoStream!.path!);
+      final file = File(widget.videoPath!);
       _controller = VideoPlayerController.file(file);
     }
 

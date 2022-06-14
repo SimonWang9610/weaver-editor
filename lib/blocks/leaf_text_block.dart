@@ -12,14 +12,19 @@ import 'base_block.dart';
 /// after [LeafTextBlockState] is initialized, we must [handleFocusChange]
 /// to determine if we need to attach/detach [EditorToolbar] by [EditorBlockProvider]
 class LeafTextBlock extends StatefulBlock {
-  final String type;
   final TextStyle style;
+  final String? text;
+  final FormatNode? initNode;
+  final TextAlign? align;
   // final String id;
   LeafTextBlock({
     Key? key,
-    this.type = 'paragraph',
+    String type = 'paragraph',
     required this.style,
     required String id,
+    this.initNode,
+    this.text,
+    this.align,
   }) : super(
           key: key,
           id: id,
@@ -36,9 +41,12 @@ class LeafTextBlock extends StatefulBlock {
   Widget buildForPreview() {
     final state = element.state as LeafTextBlockState;
 
-    return RichText(
-      textAlign: state.align ?? TextAlign.start,
-      text: state._node.build(state.controller.text),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: RichText(
+        textAlign: state.align ?? TextAlign.start,
+        text: state._node.build(state.controller.text),
+      ),
     );
   }
 
@@ -47,6 +55,8 @@ class LeafTextBlock extends StatefulBlock {
     final state = element.state as LeafTextBlockState;
 
     return {
+      'id': id,
+      'time': DateTime.now().millisecondsSinceEpoch,
       'type': 'paragraph',
       'data': {
         'text': state.headNode.toMap(state.controller.text, ''),
@@ -78,19 +88,24 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
 
     controller = BlockEditingController(
       block: this,
+      text: widget.text,
     );
 
-    _node = FormatNode(
-      selection: controller.selection,
-      style: widget.style,
-    );
+    _node = widget.initNode ??
+        FormatNode(
+          selection: controller.selection,
+          style: widget.style,
+        );
 
     defaultStyle = widget.style;
 
-    print('headNode: ${_node.range}');
+    align = widget.align;
+
     focus.addListener(handleFocusChange);
 
-    focus.requestFocus();
+    if (widget.initNode == null) {
+      focus.requestFocus();
+    }
   }
 
   @override

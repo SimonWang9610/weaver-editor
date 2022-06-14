@@ -8,11 +8,14 @@ enum BlockEditingStatus {
 }
 
 enum BlockType {
-  paragraph,
-  list,
-  image,
-  video,
-  header,
+  paragraph('paragraph'),
+  list('list'),
+  image('image'),
+  video('video'),
+  header('header');
+
+  final String type;
+  const BlockType(this.type);
 }
 
 enum BlockOperation {
@@ -27,9 +30,9 @@ enum OverlayDirection {
 }
 
 enum HeaderLine {
-  level1(96),
-  level2(60),
-  level3(48);
+  level1(60),
+  level2(48),
+  level3(36);
 
   final double size;
   const HeaderLine(this.size);

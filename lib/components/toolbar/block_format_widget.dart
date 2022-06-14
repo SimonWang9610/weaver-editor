@@ -18,8 +18,9 @@ class BlockFormatWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         FormatButton(
-          backgroundColor:
-              style.fontWeight == FontWeight.w900 ? Colors.grey : null,
+          backgroundColor: style.fontWeight == FontWeight.w900
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           onPressed: toolbar.boldText,
           icon: const Icon(
             Icons.format_bold_outlined,
@@ -27,8 +28,9 @@ class BlockFormatWidget extends StatelessWidget {
           ),
         ),
         FormatButton(
-          backgroundColor:
-              style.fontStyle == FontStyle.italic ? Colors.grey : null,
+          backgroundColor: style.fontStyle == FontStyle.italic
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           onPressed: toolbar.italicText,
           icon: const Icon(
             Icons.format_italic_outlined,
@@ -36,8 +38,9 @@ class BlockFormatWidget extends StatelessWidget {
           ),
         ),
         FormatButton(
-          backgroundColor:
-              style.decoration == TextDecoration.underline ? Colors.grey : null,
+          backgroundColor: style.decoration == TextDecoration.underline
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           onPressed: toolbar.underlineText,
           icon: const Icon(
             Icons.format_underline_outlined,

@@ -32,7 +32,7 @@ abstract class BaseToolbar
     style = defaultStyle;
     historyStyle = defaultStyle;
     align = defaultAlign ?? TextAlign.start;
-    level = HeaderLine.level2;
+    level = HeaderLine.level1;
 
     _subscription = notifier.stream.listen(
       (event) {

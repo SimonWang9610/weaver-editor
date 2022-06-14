@@ -30,6 +30,7 @@ class MyHomePage extends StatelessWidget {
     final style = Theme.of(context).textTheme.titleMedium ?? const TextStyle();
 
     return WeaverEditor(
+      title: 'editor',
       toolbar: EditorToolbar(style),
       defaultStyle: style,
     );

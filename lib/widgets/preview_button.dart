@@ -6,20 +6,25 @@ class EditorPreviewButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () {
-        EditorController.of(context).startPreview(context);
-      },
-      child: const Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 2,
-          vertical: 2,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+      child: TextButton(
+        onPressed: () {
+          EditorController.of(context).startPreview(context);
+        },
+        child: const Text(
+          'Preview',
+          style: TextStyle(
+            color: Colors.white,
+          ),
         ),
-        child: Text('Preview'),
-      ),
-      style: TextButton.styleFrom(
-        elevation: 5.0,
-        backgroundColor: Colors.white,
+        style: TextButton.styleFrom(
+          elevation: 5.0,
+          backgroundColor: Colors.blueAccent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5),
+          ),
+        ),
       ),
     );
   }

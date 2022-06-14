@@ -195,6 +195,14 @@ class FormatNode {
     }
   }
 
+  void append(FormatNode other) {
+    if (next != null) {
+      next?.append(other);
+    } else {
+      chainNext(other);
+    }
+  }
+
   FormatNode? merge(FormatNode other) {
     if (other.range.isCollapsed) {
       return _merge(other);

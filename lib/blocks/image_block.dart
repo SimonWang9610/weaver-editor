@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'base_block.dart';
 
 /// must override [element] to declare its [Element] type explicitly
@@ -11,7 +10,7 @@ import 'base_block.dart';
 /// TODO: enabel image caption
 class ImageBlock extends StatelessBlock {
   final String? imageUrl;
-  final PlatformFile? imageData;
+  final String? imagePath;
   final String? caption;
   final double screenScale;
 
@@ -20,10 +19,10 @@ class ImageBlock extends StatelessBlock {
     required String id,
     String type = 'image',
     this.imageUrl,
-    this.imageData,
+    this.imagePath,
     this.caption,
     this.screenScale = 0.6,
-  })  : assert(imageUrl != null || imageData != null),
+  })  : assert(imageUrl != null || imagePath != null),
         super(
           key: key,
           id: id,
@@ -35,14 +34,16 @@ class ImageBlock extends StatelessBlock {
 
   @override
   Map<String, dynamic> toMap() => {
+        'id': id,
         'type': type,
+        'time': DateTime.now().millisecondsSinceEpoch,
         'data': {
-          'file': imageUrl ?? imageData?.path,
+          'file': imageUrl ?? imagePath,
+          'caption': caption,
+          'withBorder': false,
+          'withBackground': false,
+          'stretched': true,
         },
-        'caption': caption,
-        'withBorder': false,
-        'withBackground': false,
-        'stretched': true,
       };
 
   @override
@@ -57,7 +58,7 @@ class ImageBlock extends StatelessBlock {
             errorBuilder: (_, __, ___) => errorWidget,
           )
         : Image.file(
-            File(imageData!.path!),
+            File(imagePath!),
             fit: BoxFit.contain,
             errorBuilder: (_, __, ___) => errorWidget,
           );
@@ -74,20 +75,6 @@ class ImageBlock extends StatelessBlock {
       ],
     );
   }
-
-  Widget get networkImage => CachedNetworkImage(
-        imageUrl: imageUrl!,
-        progressIndicatorBuilder: (innerContext, url, progress) => Center(
-          child: CircularProgressIndicator(
-            value: progress.progress,
-          ),
-        ),
-        errorWidget: (_, __, error) => const Center(
-          child: Icon(
-            Icons.error_outline,
-          ),
-        ),
-      );
 
   Widget get loadingWidget => const Center(
         child: CircularProgressIndicator(),

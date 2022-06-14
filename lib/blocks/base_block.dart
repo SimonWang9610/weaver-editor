@@ -67,7 +67,12 @@ abstract class StatelessBlock extends StatelessWidget
   }
 
   @override
-  Widget buildForPreview() => this;
+  Widget buildForPreview() => Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: 5,
+        ),
+        child: this,
+      );
 }
 
 /// actually, no need to create below custom [Elements]
@@ -81,8 +86,4 @@ class StatelessBlockElement extends StatelessElement {
 
 mixin BaseBlockConvert {
   Map<String, dynamic> toMap();
-}
-
-abstract class BlockFactory {
-  BaseBlock fromMap(Map<String, dynamic> map);
 }
