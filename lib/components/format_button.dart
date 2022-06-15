@@ -16,7 +16,7 @@ class FormatButton extends StatelessWidget {
     return TextButton(
       style: TextButton.styleFrom(
         backgroundColor: backgroundColor,
-        shape: const RoundedRectangleBorder(),
+        shape: const CircleBorder(),
       ),
       onPressed: onPressed,
       child: icon,

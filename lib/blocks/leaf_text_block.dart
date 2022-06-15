@@ -11,15 +11,29 @@ import 'base_block.dart';
 /// to apply [TextStyle] and enable hit testing
 /// after [LeafTextBlockState] is initialized, we must [handleFocusChange]
 /// to determine if we need to attach/detach [EditorToolbar] by [EditorBlockProvider]
+///
+/// 1)
+/// when restore blocks from remote or local databases
+/// we must deserialize json-blocks to [ParsedNode] by [BlockDeserializer]
+/// so that we could restore its [headNode], which will be [initNode], from [ParsedNode]
+/// when deserializing, we also extract pure text string from block data, which will be [text]
+///
+/// 2)
+/// when creating a new block, [initNode] and [text] will be null
 class LeafTextBlock extends StatefulBlock {
-  final String type;
   final TextStyle style;
+  final String? text;
+  final FormatNode? initNode;
+  final TextAlign? align;
   // final String id;
   LeafTextBlock({
     Key? key,
-    this.type = 'paragraph',
+    String type = 'paragraph',
     required this.style,
     required String id,
+    this.initNode,
+    this.text,
+    this.align,
   }) : super(
           key: key,
           id: id,
@@ -36,9 +50,12 @@ class LeafTextBlock extends StatefulBlock {
   Widget buildForPreview() {
     final state = element.state as LeafTextBlockState;
 
-    return RichText(
-      textAlign: state.align ?? TextAlign.start,
-      text: state._node.build(state.controller.text),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: RichText(
+        textAlign: state.align ?? TextAlign.start,
+        text: state._node.build(state.controller.text),
+      ),
     );
   }
 
@@ -47,6 +64,8 @@ class LeafTextBlock extends StatefulBlock {
     final state = element.state as LeafTextBlockState;
 
     return {
+      'id': id,
+      'time': DateTime.now().millisecondsSinceEpoch,
       'type': 'paragraph',
       'data': {
         'text': state.headNode.toMap(state.controller.text, ''),
@@ -76,21 +95,39 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
   void initState() {
     super.initState();
 
+    // final TextEditingValue value = widget.text == null
+    //     ? TextEditingValue.empty
+    //     : TextEditingValue(
+    //         text: widget.text!,
+    //         selection: TextSelection.collapsed(
+    //           offset: widget.text!.characters.length,
+    //         ),
+    //       );
+
+    // controller = BlockEditingController.fromValue(
+    //   block: this,
+    //   value: value,
+    // );
     controller = BlockEditingController(
       block: this,
+      text: widget.text,
     );
 
-    _node = FormatNode(
-      selection: controller.selection,
-      style: widget.style,
-    );
+    _node = widget.initNode ??
+        FormatNode(
+          selection: controller.selection,
+          style: widget.style,
+        );
 
     defaultStyle = widget.style;
 
-    print('headNode: ${_node.range}');
+    align = widget.align;
+
     focus.addListener(handleFocusChange);
 
-    focus.requestFocus();
+    if (widget.initNode == null) {
+      focus.requestFocus();
+    }
   }
 
   @override
@@ -125,6 +162,7 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
     super.build(context);
 
     return TextField(
+      enabled: true,
       strutStyle: strut,
       style: widget.style,
       textAlign: align ?? TextAlign.start,

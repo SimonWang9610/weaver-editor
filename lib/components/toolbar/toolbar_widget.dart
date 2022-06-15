@@ -54,7 +54,8 @@ class _EditorToolbarWidgetState extends State<EditorToolbarWidget> {
       height: size.height * 0.05,
       child: RepaintBoundary(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             type == 'paragraph'
                 ? BlockFormatWidget(

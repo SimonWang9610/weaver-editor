@@ -25,10 +25,11 @@ mixin BlockCreationDelegate {
     return HeaderBlock(
       id: id,
       key: ValueKey(id),
+      align: TextAlign.center,
       style: TextStyle(
         color: Colors.black,
         fontWeight: FontWeight.bold,
-        fontSize: HeaderLine.level2.size,
+        fontSize: HeaderLine.level1.size,
       ),
     );
   }
@@ -40,7 +41,7 @@ mixin BlockCreationDelegate {
       id: id,
       key: ValueKey(id),
       imageUrl: data.url,
-      imageData: data.file,
+      imagePath: data.file?.path,
       caption: data.caption,
     );
   }
@@ -51,7 +52,7 @@ mixin BlockCreationDelegate {
     return VideoBlock(
       id: id,
       key: ValueKey(id),
-      videoStream: data.file,
+      videoPath: data.file?.path,
       videoUrl: data.url,
       caption: data.caption,
     );

@@ -32,7 +32,7 @@ abstract class BaseToolbar
     style = defaultStyle;
     historyStyle = defaultStyle;
     align = defaultAlign ?? TextAlign.start;
-    level = HeaderLine.level2;
+    level = HeaderLine.level1;
 
     _subscription = notifier.stream.listen(
       (event) {
@@ -73,6 +73,8 @@ class EditorToolbar extends BaseToolbar with InlineHyperLinkCreator {
 
   @override
   EditorToolbar attach(BlockEditingController controller) {
+    // TODO: synchronize the align of blocks
+
     if (controller.headerLevel != null) {
       level = controller.headerLevel!;
     }

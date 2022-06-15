@@ -3,21 +3,20 @@ import 'package:flutter/gestures.dart';
 import 'format_node.dart';
 
 class HyperLinkNode extends FormatNode {
-  late final TapGestureRecognizer recognizer;
+  TapGestureRecognizer? recognizer;
   final String url;
 
   HyperLinkNode(
     this.url, {
     required TextSelection selection,
     TextStyle style = const TextStyle(
+      inherit: true,
       color: Colors.red,
       decoration: TextDecoration.underline,
       textBaseline: TextBaseline.ideographic,
       fontSize: 28,
     ),
-  }) : super(selection: selection, style: style) {
-    recognizer = TapGestureRecognizer()..onTap = _handleTap;
-  }
+  }) : super(selection: selection, style: style);
 
   factory HyperLinkNode.position(
     int start,
@@ -30,7 +29,7 @@ class HyperLinkNode extends FormatNode {
 
   @override
   void unlink() {
-    recognizer.dispose();
+    recognizer?.dispose();
     super.unlink();
   }
 
@@ -39,7 +38,7 @@ class HyperLinkNode extends FormatNode {
     super.fuse(startNode, endNode);
 
     if (previous == null && next == null) {
-      recognizer.dispose();
+      recognizer?.dispose();
     }
   }
 
@@ -49,6 +48,19 @@ class HyperLinkNode extends FormatNode {
     TextStyle? forcedStyle,
   }) {
     final caption = content.characters.getRange(range.start, range.end).string;
+
+    print('build hyper link node: $url');
+
+    // ! must create recognizer after the first build is completed
+    // ! otherwise, it will throw recognizer lateInitializationError
+    // ! it may because the consecutive two build of a block restored from local database
+    // ! when the first build, the WeaverEditor has not been laid out completely.
+    // ! so we initialize the recognizer after the WeaverEditor has been laid out/first built
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        recognizer ??= TapGestureRecognizer()..onTap = _handleTap;
+      },
+    );
 
     final chainedSpan = next?.build(content);
 

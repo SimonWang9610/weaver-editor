@@ -12,7 +12,7 @@ class HyperLinkButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       style: TextButton.styleFrom(
-        shape: const RoundedRectangleBorder(),
+        shape: const CircleBorder(),
       ),
       onPressed: onPressed,
       child: const Icon(Icons.add_link),

@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 
 import 'leaf_text_block.dart';
 import '../models/types.dart';
+import '../models/format_node.dart';
+import '../extensions/headerline_ext.dart';
 
 class HeaderBlock extends LeafTextBlock {
   HeaderBlock({
     Key? key,
     required String id,
     required TextStyle style,
+    String? text,
+    FormatNode? initNode,
+    TextAlign? align,
     String type = 'header',
   }) : super(
           key: key,
           id: id,
           style: style,
           type: type,
+          text: text,
+          align: align,
+          initNode: initNode,
         );
 
   @override
@@ -45,6 +53,8 @@ class HeaderBlock extends LeafTextBlock {
     }
 
     return {
+      'id': id,
+      'time': DateTime.now().millisecondsSinceEpoch,
       'type': type,
       'data': {
         'level': level,
@@ -64,8 +74,7 @@ class HeaderBlockState extends LeafTextBlockState {
   @override
   void initState() {
     super.initState();
-
-    level = widget.style.getHeaderLine();
+    level = widget.style.fontSize!.sizeToHeaderLine();
   }
 
   void changeHeaderLevel(HeaderLine newLevel) {
@@ -104,23 +113,5 @@ class HeaderBlockState extends LeafTextBlockState {
       focusNode: focus,
       maxLines: null,
     );
-  }
-}
-
-extension HeaderLineFromFontSize on TextStyle {
-  HeaderLine getHeaderLine() {
-    if (fontSize == null) {
-      return HeaderLine.level2;
-    } else {
-      if (fontSize == 96) {
-        return HeaderLine.level1;
-      } else if (fontSize == 60) {
-        return HeaderLine.level2;
-      } else if (fontSize == 48) {
-        return HeaderLine.level3;
-      } else {
-        return HeaderLine.level2;
-      }
-    }
   }
 }

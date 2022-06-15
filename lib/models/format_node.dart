@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/models/hyper_link_node.dart';
 
-import '../delegates/node_converter_delegate.dart';
+import '../extensions/text_style_ext.dart';
 
 import 'editing_selection.dart';
 import 'block_range.dart';
@@ -50,7 +50,7 @@ class FormatNode {
 
   TextSpan build(String content, {TextStyle? forcedStyle}) {
     final text = content.characters.getRange(range.start, range.end).string;
-    // print('$range: $text');
+    // print('$range: $text, style: $style');
 
     final chainedSpan = next?.build(
       content,
@@ -80,9 +80,13 @@ class FormatNode {
   }
 
   void unlink() {
-    print('####################unlink: $range');
+    // print('####################unlink: $range');
     previous = null;
     next = null;
+
+    if (isInitNode) {
+      previous?.unlink();
+    }
   }
 
   void dispose() {
@@ -91,8 +95,10 @@ class FormatNode {
     unlink();
   }
 
-  // to fuse all nodes between [startNode] and [endNode]
-  //
+  /// to fuse all nodes between [startNode] and [endNode]
+  /// to dereference all nodes between [NodePair]
+  /// but keeps the [previous] of [startNode] and [next] of [endNode]
+  /// so that we can re-chain the new part made of nodes to the original node chain
   void fuse(FormatNode startNode, FormatNode endNode) {
     // merge always starts from head to trail
     // no need to propagate to its previous node
@@ -118,7 +124,8 @@ class FormatNode {
     }
   }
 
-  // find all nodes containing [selection]
+  /// find a [NodePair], a path connecting all nodes covered by [selection]
+  /// [NodePair] will base on the [BlockEditingSelection.old] to calculate
   void findNodePair(BlockEditingSelection selection, NodePair pair) {
     if (selection.status == BlockEditingStatus.init) {
       range = NodeRange.fromSelection(selection.latest);
@@ -160,32 +167,12 @@ class FormatNode {
     }
   }
 
-  // ensure the found node pair correct
-  // if searchNext is true, we may continue searching the next node
-  // if false, we may continue searching the previous node;
-  FormatNode? nodeContainsSpot(int spot, {bool searchNext = true}) {
-    if (range.contains(spot)) {
-      return this;
-    } else {
-      return searchNext
-          ? next?.nodeContainsSpot(spot)
-          : previous?.nodeContainsSpot(
-              spot,
-              searchNext: false,
-            );
-    }
-  }
-
+  /// set [other] as [next] if cannot merge them
   void chainNext(FormatNode other) {
-    assert(range.canChain(other.range), '');
+    assert(
+        range.canChain(other.range), 'cannot chain $range <--> ${other.range}');
 
-    if (!range.canChain(other.range)) {
-      throw ErrorDescription('cannot chain $range <--> ${other.range}');
-    }
-
-    if (!range.isValid) {
-      throw ErrorDescription('FormatNode range invalid: $this');
-    }
+    assert(range.isValid, 'FormatNode range invalid: $this');
 
     if (range.canMerge(other.range)) {
       _merge(other);
@@ -195,6 +182,20 @@ class FormatNode {
     }
   }
 
+  /// append [other] to the trail of the linked nodes
+  void append(FormatNode other) {
+    if (next != null) {
+      next?.append(other);
+    } else {
+      chainNext(other);
+    }
+  }
+
+  /// merge the adjacent nodes if
+  /// 1) they have same [style] for [FormatNode]
+  /// 2) they have same [url] for [HyperLinkNode]
+  /// 3) no matter what kind of node they are,
+  ///  we also merge them as long as [other] is collapsed
   FormatNode? merge(FormatNode other) {
     if (other.range.isCollapsed) {
       return _merge(other);
@@ -221,8 +222,10 @@ class FormatNode {
     return spot > range.start;
   }
 
+  /// particularly, the init [headNode] of each block usually is initialized as (0, 0)
   bool get isInitNode => range.start == 0 && range.end == 0;
 
+  /// once merged, [other] must dereference its [previous] and [next]
   FormatNode _merge(FormatNode other) {
     range = range + other.range;
     next = other.next;

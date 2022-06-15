@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:nanoid/nanoid.dart';
 
 import 'package:weaver_editor/blocks/base_block.dart';
 import 'package:weaver_editor/components/animated_block_list.dart';
@@ -10,20 +11,23 @@ import 'package:weaver_editor/delegates/editor_scroll_delegate.dart';
 import 'package:weaver_editor/editor_toolbar.dart';
 import 'package:weaver_editor/delegates/block_creator_delegate.dart';
 import 'package:weaver_editor/components/overlays/overlay_manager.dart';
-import 'package:weaver_editor/preview.dart';
-import 'package:weaver_editor/widgets/preview_button.dart';
+import 'package:weaver_editor/models/editor_metadata.dart';
+import 'package:weaver_editor/screens/preview.dart';
+import 'package:weaver_editor/widgets/editor_appbar.dart';
 import 'components/toolbar/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
 import 'models/types.dart';
 import 'widgets/block_control_widget.dart';
 
 class WeaverEditor extends StatefulWidget {
+  final EditorMetadata metadata;
   final EditorToolbar toolbar;
   final TextStyle defaultStyle;
   const WeaverEditor({
     Key? key,
     required this.toolbar,
     required this.defaultStyle,
+    required this.metadata,
   }) : super(key: key);
 
   @override
@@ -42,6 +46,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
     super.initState();
     controller = EditorController(
       widget.toolbar,
+      metadata: widget.metadata,
       defaultStyle: widget.defaultStyle,
     );
 
@@ -65,70 +70,112 @@ class _WeaverEditorState extends State<WeaverEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Weaver Editor'),
-          actions: const [
-            EditorPreviewButton(),
-          ],
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 20,
-              horizontal: 10,
+    print('create editor');
+
+    return WillPopScope(
+      child: GestureDetector(
+        child: Scaffold(
+          appBar: EditorAppBar(
+            title: Text(
+              widget.metadata.title,
+              style: const TextStyle(
+                color: Colors.black,
+              ),
             ),
-            child: Column(
-              children: [
-                Expanded(
-                  child: AnimatedBlockList(
-                    key: _listKey,
-                    scrollController: _scrollController,
-                    initItemCount: controller.blocks.length,
-                    separatedBuilder: (_, index) => BlockControlWidget(
-                      index: index,
+            leading: IconButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 20,
+                horizontal: 10,
+              ),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: AnimatedBlockList(
+                      key: _listKey,
+                      scrollController: _scrollController,
+                      initItemCount: controller.blocks.length,
+                      separatedBuilder: (_, index) => BlockControlWidget(
+                        index: index,
+                      ),
+                      itemBuilder: (_, index, animation) {
+                        return FadeTransition(
+                          key: ValueKey(controller.blocks[index].id),
+                          opacity: animation,
+                          child: DragTargetWrapper(
+                            index: index,
+                          ),
+                        );
+                      },
                     ),
-                    itemBuilder: (_, index, animation) {
-                      return FadeTransition(
-                        key: ValueKey(controller.blocks[index].id),
-                        opacity: animation,
-                        child: DragTargetWrapper(
-                          index: index,
-                        ),
-                      );
-                    },
                   ),
-                ),
-                EditorToolbarWidget(
-                  toolbar: controller.toolbar,
-                ),
-              ],
+                  EditorToolbarWidget(
+                    toolbar: controller.toolbar,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+        onTap: () => controller.manager.removeOverlay(
+          playReverseAnimation: true,
+        ),
       ),
-      onTap: controller.manager.removeOverlay,
+      onWillPop: () async {
+        // final result = await EditorProvider().save(
+        //   controller.id,
+        //   controller.title,
+        //   controller.blocks,
+        // );
+
+        // return result > 0;
+        return true;
+      },
     );
   }
 }
 
 class EditorController
     with BlockManageDelegate, BlockCreationDelegate, EditorScrollDelegate {
-  final List<BaseBlock> _blocks;
   final EditorToolbar toolbar;
   final TextStyle defaultStyle;
   final StreamController<BlockOperationEvent> _notifier =
       StreamController.broadcast();
 
   final BlockManager manager;
+  late final List<BaseBlock> _blocks;
+  late final EditorMetadata data;
 
   EditorController(
     this.toolbar, {
     required this.defaultStyle,
-    List<BaseBlock>? initBlocks,
-  })  : _blocks = initBlocks ?? [],
-        manager = BlockManager();
+    required EditorMetadata metadata,
+  })  : manager = BlockManager(),
+        data = metadata.copyWith(id: nanoid(36)) {
+    // if (blockData == null) {
+    //   _blocks = [];
+    // } else {
+    //   _blocks = List.generate(
+    //     blockData.length,
+    //     (index) {
+    //       final block = blockData['$index'];
+    //       print('$index: $block');
+    //       return BlockFactory().fromMap(block, defaultStyle);
+    //     },
+    //     growable: true,
+    //   );
+    // }
+
+    _blocks = data.getBlocks(defaultStyle);
+  }
 
   static EditorController of(BuildContext context) {
     final editor = context.findAncestorStateOfType<_WeaverEditorState>();
@@ -163,6 +210,8 @@ class EditorController
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => BlockPreview(
+          id: data.id!,
+          title: data.title,
           blocks: _blocks,
         ),
       ),

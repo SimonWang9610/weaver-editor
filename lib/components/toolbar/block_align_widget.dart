@@ -20,9 +20,12 @@ class BlockAlignWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         FormatButton(
-          backgroundColor: align == TextAlign.start ? Colors.grey : null,
+          backgroundColor: align == TextAlign.start
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           icon: const Icon(
             Icons.format_align_justify_outlined,
+            color: Colors.black,
           ),
           onPressed: () {
             toolbar.updateAlign(TextAlign.start);
@@ -30,9 +33,12 @@ class BlockAlignWidget extends StatelessWidget {
           },
         ),
         FormatButton(
-          backgroundColor: align == TextAlign.left ? Colors.grey : null,
+          backgroundColor: align == TextAlign.left
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           icon: const Icon(
             Icons.format_align_left_outlined,
+            color: Colors.black,
           ),
           onPressed: () {
             toolbar.updateAlign(TextAlign.left);
@@ -40,9 +46,12 @@ class BlockAlignWidget extends StatelessWidget {
           },
         ),
         FormatButton(
-          backgroundColor: align == TextAlign.center ? Colors.grey : null,
+          backgroundColor: align == TextAlign.center
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           icon: const Icon(
             Icons.format_align_center_outlined,
+            color: Colors.black,
           ),
           onPressed: () {
             toolbar.updateAlign(TextAlign.center);
@@ -50,9 +59,12 @@ class BlockAlignWidget extends StatelessWidget {
           },
         ),
         FormatButton(
-          backgroundColor: align == TextAlign.right ? Colors.grey : null,
+          backgroundColor: align == TextAlign.right
+              ? const Color.fromARGB(255, 48, 222, 202)
+              : null,
           icon: const Icon(
             Icons.format_align_right_outlined,
+            color: Colors.black,
           ),
           onPressed: () {
             toolbar.updateAlign(TextAlign.right);

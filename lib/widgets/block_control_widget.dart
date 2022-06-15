@@ -12,31 +12,26 @@ class BlockControlWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          BlockOptionOverlay(
-            index: index,
-            direction: OverlayDirection.left,
-            icon: const Icon(
-              Icons.add_box_outlined,
-              color: Colors.greenAccent,
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        BlockOptionOverlay(
+          index: index,
+          direction: OverlayDirection.left,
+          icon: const Icon(
+            Icons.post_add_rounded,
+            color: Colors.green,
           ),
-          BlockOptionOverlay(
-            index: index,
-            direction: OverlayDirection.right,
-            icon: const Icon(
-              Icons.more_horiz_outlined,
-              color: Colors.black,
-            ),
+        ),
+        BlockOptionOverlay(
+          index: index,
+          direction: OverlayDirection.right,
+          icon: const Icon(
+            Icons.more_horiz_outlined,
+            color: Colors.black,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -122,8 +122,6 @@ mixin AttachedBlockDelegate {
   void attach(BlockEditingController controller) {
     if (attachedController == controller) return;
 
-    print('previous type: $blockType: incomging type: ${controller.blockType}');
-
     if (controller.blockType != blockType) {
       handleBlockTypeChange();
     }
@@ -133,6 +131,7 @@ mixin AttachedBlockDelegate {
     attachedController = controller;
   }
 
+  /// switch the toolbar buttons for different block types
   void handleBlockTypeChange() {
     notifier.add(ToolbarEvent.blockType);
   }
