@@ -146,13 +146,11 @@ class EditorProvider {
     final results = await _db.query(
       editorTable,
       orderBy: 'lastUpdate DESC',
-      limit: 10,
+      limit: limit,
       offset: offset,
     );
 
     for (final map in results) {
-      print(map);
-
       publications.add(Publication.fromMap(map));
     }
 

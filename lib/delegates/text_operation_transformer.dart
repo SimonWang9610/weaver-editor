@@ -35,7 +35,7 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
     final pair = findNodesBySelection(selection);
 
     // print('found pair: $pair');
-    // print(' status: ${selection.status}');
+    print(' status: ${selection.status}');
     assert(pair.isPaired(), 'operation must be on a paired path');
 
     switch (selection.status) {
@@ -63,6 +63,12 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
     return pair.isMerged();
   }
 
+  /// 1) do not apply any style changes if [NodePair] is on the same [HyperLinkNode]
+  /// 2) [synchronize] the style if the [BlockEditingSelection.last] is collapsed
+  /// therefore, we could keep [attachedToolbar] always has the synchronized style with the focused node
+  /// ! because it will trigger a selection operation automatically after completing each insert/delete operation
+  /// 3) when the [BlockEditingSelection.last] is not collapsed, we may not need to apply the stye of [attachedToolbar]
+  /// if the toolbar style is still synchronized. only when the toolbar style is also not synchronized, we must apply the style to the selected words
   void updateBySelection(BlockEditingSelection selection, NodePair pair) {
     // ! do not apply style changes to same HyperLinkNode
     if (pair.onSameLinkNode) return;
@@ -112,6 +118,8 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
     );
   }
 
+  /// by [NodePair.sanitize], we dereference its head and trail
+  /// and keep the head [previous] and the trail [next] to restore and update the node chain
   void _handleOperation(
     BlockEditingSelection selection,
     NodePair pair, {
@@ -135,6 +143,9 @@ mixin LeafTextBlockTransformer<T extends StatefulBlock>
     );
   }
 
+  /// before chain all nodes together, we may need to align [next] to the end of the trail of [chained]
+  /// because the entire range of [chained] may increase by insert or decrease by delete
+  /// meanwhile, to
   void _chainNodes({
     FormatNode? previous,
     FormatNode? next,

@@ -13,6 +13,19 @@ import '../models/format_node.dart';
 import '../extensions/headerline_ext.dart';
 import '../extensions/text_style_ext.dart';
 
+/// the block [map] of [fromMap] must be the format:
+/// {
+///   'id': string,
+///   'type': string,
+///   'data': {
+///        ...
+///    }
+/// }
+/// it should be conformant to the [toMap] of each kind of block
+///
+/// *
+/// 1) each block must have a [ValueKey] from its [id] to keep state during re-order/draggable
+
 class BlockFactory {
   static final BlockDeserializer deserializer = BlockDeserializer();
 

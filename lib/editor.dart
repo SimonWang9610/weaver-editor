@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:nanoid/nanoid.dart';
 
 import 'package:weaver_editor/blocks/base_block.dart';
-import 'package:weaver_editor/blocks/block_factory.dart';
 import 'package:weaver_editor/components/animated_block_list.dart';
 import 'package:weaver_editor/components/draggble_block_wrapper.dart';
 import 'package:weaver_editor/delegates/block_manage_delegate.dart';
@@ -12,8 +11,8 @@ import 'package:weaver_editor/delegates/editor_scroll_delegate.dart';
 import 'package:weaver_editor/editor_toolbar.dart';
 import 'package:weaver_editor/delegates/block_creator_delegate.dart';
 import 'package:weaver_editor/components/overlays/overlay_manager.dart';
+import 'package:weaver_editor/models/editor_metadata.dart';
 import 'package:weaver_editor/screens/preview.dart';
-import 'package:weaver_editor/storage/editor_provider.dart';
 import 'package:weaver_editor/widgets/editor_appbar.dart';
 import 'components/toolbar/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
@@ -21,18 +20,14 @@ import 'models/types.dart';
 import 'widgets/block_control_widget.dart';
 
 class WeaverEditor extends StatefulWidget {
-  final String title;
-  final String? initId;
-  final Map<String, dynamic>? blockData;
+  final EditorMetadata metadata;
   final EditorToolbar toolbar;
   final TextStyle defaultStyle;
   const WeaverEditor({
     Key? key,
-    required this.title,
     required this.toolbar,
     required this.defaultStyle,
-    this.initId,
-    this.blockData,
+    required this.metadata,
   }) : super(key: key);
 
   @override
@@ -51,10 +46,8 @@ class _WeaverEditorState extends State<WeaverEditor> {
     super.initState();
     controller = EditorController(
       widget.toolbar,
-      blockData: widget.blockData,
+      metadata: widget.metadata,
       defaultStyle: widget.defaultStyle,
-      title: widget.title,
-      initId: widget.initId,
     );
 
     _sub = controller.listen(_handleBlockChange);
@@ -84,7 +77,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
         child: Scaffold(
           appBar: EditorAppBar(
             title: Text(
-              widget.title,
+              widget.metadata.title,
               style: const TextStyle(
                 color: Colors.black,
               ),
@@ -152,37 +145,36 @@ class _WeaverEditorState extends State<WeaverEditor> {
 
 class EditorController
     with BlockManageDelegate, BlockCreationDelegate, EditorScrollDelegate {
-  late final List<BaseBlock> _blocks;
-  final String title;
-  final String id;
   final EditorToolbar toolbar;
   final TextStyle defaultStyle;
   final StreamController<BlockOperationEvent> _notifier =
       StreamController.broadcast();
 
   final BlockManager manager;
+  late final List<BaseBlock> _blocks;
+  late final EditorMetadata data;
 
   EditorController(
     this.toolbar, {
     required this.defaultStyle,
-    required this.title,
-    String? initId,
-    Map<String, dynamic>? blockData,
+    required EditorMetadata metadata,
   })  : manager = BlockManager(),
-        id = initId ?? nanoid(36) {
-    if (blockData == null) {
-      _blocks = [];
-    } else {
-      _blocks = List.generate(
-        blockData.length,
-        (index) {
-          final block = blockData['$index'];
-          print('$index: $block');
-          return BlockFactory().fromMap(block, defaultStyle);
-        },
-        growable: true,
-      );
-    }
+        data = metadata.copyWith(id: nanoid(36)) {
+    // if (blockData == null) {
+    //   _blocks = [];
+    // } else {
+    //   _blocks = List.generate(
+    //     blockData.length,
+    //     (index) {
+    //       final block = blockData['$index'];
+    //       print('$index: $block');
+    //       return BlockFactory().fromMap(block, defaultStyle);
+    //     },
+    //     growable: true,
+    //   );
+    // }
+
+    _blocks = data.getBlocks(defaultStyle);
   }
 
   static EditorController of(BuildContext context) {
@@ -218,8 +210,8 @@ class EditorController
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => BlockPreview(
-          id: id,
-          title: title,
+          id: data.id!,
+          title: data.title,
           blocks: _blocks,
         ),
       ),

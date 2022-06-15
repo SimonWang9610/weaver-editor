@@ -5,6 +5,12 @@ class BlockDeserializer with DeserializerHelper {
 
   BlockDeserializer();
 
+  /// find all tags by [reg]
+  /// use [stack] to record left tags not consumed by its right tag
+  /// [previousMatched] to record the last tag which is either put in [stack] or used to consume the left tag
+  /// meanwhile, we will calculate [anchor] to determine if we need creating a new [ParsedNode]
+  /// if tag is [isHyperLink], we also extract [url] by [_getUrl]
+  /// finally, we may create the last [ParsedNode] based on [previousMatched]
   List<ParsedNode> parse(String source) {
     final List<ParsedNode> parsed = [];
 
@@ -27,12 +33,12 @@ class BlockDeserializer with DeserializerHelper {
           tags: const [],
         );
       } else if (stack.isNotEmpty) {
-        final distance = calculateDistance(previousMatched!.end, match.start);
+        final distance = calculateDistance(anchor, match.start);
 
         if (distance > 0) {
           node = ParsedNode(
             source.substring(
-              previousMatched.end,
+              anchor,
               match.start,
             ),
             tags: getTags(source, stack),
@@ -40,7 +46,7 @@ class BlockDeserializer with DeserializerHelper {
             /// when the current [tag] is the right hyper link node
             /// we assert the previous tag is the left hyper link node
             /// so we will extract href/url from the previous tag
-            url: isHyperLink(tag) ? _getUrl(source, previousMatched) : null,
+            url: isHyperLink(tag) ? _getUrl(source, previousMatched!) : null,
           );
         }
       }

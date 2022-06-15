@@ -11,6 +11,15 @@ import 'base_block.dart';
 /// to apply [TextStyle] and enable hit testing
 /// after [LeafTextBlockState] is initialized, we must [handleFocusChange]
 /// to determine if we need to attach/detach [EditorToolbar] by [EditorBlockProvider]
+///
+/// 1)
+/// when restore blocks from remote or local databases
+/// we must deserialize json-blocks to [ParsedNode] by [BlockDeserializer]
+/// so that we could restore its [headNode], which will be [initNode], from [ParsedNode]
+/// when deserializing, we also extract pure text string from block data, which will be [text]
+///
+/// 2)
+/// when creating a new block, [initNode] and [text] will be null
 class LeafTextBlock extends StatefulBlock {
   final TextStyle style;
   final String? text;
