@@ -43,21 +43,21 @@ mixin BlockManageDelegate {
   }
 
   BaseBlock getBlockById(String id) {
-    final block = blocks.singleWhere((element) => element.id == id);
+    final block = blocks.singleWhere((element) => element.data.id == id);
     return block;
   }
 
   int getBlockIndex(String id) {
-    return blocks.indexWhere((element) => element.id == id);
+    return blocks.indexWhere((element) => element.data.id == id);
   }
 
   Widget getBlockPreview(String id) {
     final block = getBlockById(id);
-    return block.buildForPreview();
+    return block.preview;
   }
 
   String getBlockId(int index) {
-    return blocks[index].id;
+    return blocks[index].data.id;
   }
 
   BaseBlock getBlockByIndex(int index) {
@@ -65,7 +65,7 @@ mixin BlockManageDelegate {
   }
 
   void moveBlockTo(String blockId, int dst) {
-    final src = blocks.indexWhere((element) => element.id == blockId);
+    final src = blocks.indexWhere((element) => element.data.id == blockId);
 
     if (src > -1) {
       final block = blocks.removeAt(src);

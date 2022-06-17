@@ -1,5 +1,3 @@
-import 'package:weaver_editor/models/format_node.dart';
-
 class ParsedNode {
   final String? url;
   final String text;

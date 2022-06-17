@@ -56,6 +56,8 @@ class HyperLinkNode extends FormatNode {
     // ! it may because the consecutive two build of a block restored from local database
     // ! when the first build, the WeaverEditor has not been laid out completely.
     // ! so we initialize the recognizer after the WeaverEditor has been laid out/first built
+    /// it also may because some operations trigger [TapGestureRecognizer.onTap] during the first build
+    /// consequently, it throws LateInitializationError
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
         recognizer ??= TapGestureRecognizer()..onTap = _handleTap;
@@ -75,7 +77,7 @@ class HyperLinkNode extends FormatNode {
   }
 
   @override
-  String toMap(String content, String result) {
+  String toPlainText(String content, String result) {
     final text = content.characters.getRange(range.start, range.end).string;
 
     if (text.isNotEmpty) {
@@ -83,7 +85,7 @@ class HyperLinkNode extends FormatNode {
     }
 
     if (next != null) {
-      result = next!.toMap(content, result);
+      result = next!.toPlainText(content, result);
     }
     return result;
   }

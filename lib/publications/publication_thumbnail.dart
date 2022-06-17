@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/editor_toolbar.dart';
+import 'package:weaver_editor/toolbar/editor_toolbar.dart';
 import 'package:weaver_editor/editor.dart';
 import 'package:weaver_editor/models/editor_metadata.dart';
 import 'package:weaver_editor/storage/editor_provider.dart';
@@ -46,7 +46,7 @@ class PublicationThumbnail extends StatelessWidget {
               metadata: EditorMetadata(
                 id: publication.id,
                 title: publication.title,
-                blockData: publication.blockData,
+                blocks: publication.blockData,
               ),
               toolbar: EditorToolbar(style),
               defaultStyle: style,

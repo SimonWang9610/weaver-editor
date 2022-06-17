@@ -13,7 +13,7 @@ mixin EditorScrollDelegate {
         final scrollExt = controller.position.maxScrollExtent;
         final offset = calculateScrollPosition(index);
 
-        if (offset < scrollExt) {
+        if (offset > scrollExt) {
           controller.animateTo(
             offset,
             duration: const Duration(
@@ -32,14 +32,10 @@ mixin EditorScrollDelegate {
     double offset = 0;
 
     for (int i = 0; i <= index; i++) {
-      final box = blocks[i].element.renderObject as RenderBox?;
-      offset += box?.size.height ?? 0 + 24;
+      final blockBottom = blocks[i].offset;
+      offset += blockBottom?.dy ?? 0 + 24;
     }
 
     return offset;
-  }
-
-  RenderObject? findBlockRenderObject(int index) {
-    return blocks[index].element.renderObject;
   }
 }

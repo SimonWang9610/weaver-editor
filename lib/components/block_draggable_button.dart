@@ -26,7 +26,7 @@ class BlockDraggableButton extends StatelessWidget {
     return Draggable<String>(
       data: blockId,
       child: child,
-      feedback: feedback.buildForPreview(),
+      feedback: feedback.preview,
       onDragStarted: onDragStart,
       dragAnchor: DragAnchor.pointer,
       // dragAnchorStrategy: (draggable, __, position) {

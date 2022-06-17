@@ -2,39 +2,26 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:file_picker/file_picker.dart';
 import 'base_block.dart';
+import '../models/data/block_data.dart';
 
-/// [buildForPreview] return [VideoBlock] directly
-/// TODO: to set custom aspect ratio of the [VideoPlayer]
-/// TODO: shoudl fallback to request vidoe resources if [videoUrl] not link to static video files
-/// TODO: support Youtube video
-/// TODO: add vidoe width & height
-/// TODO: enable video caption
-class VideoBlock extends StatefulBlock {
+class VideoBlockData extends BlockData {
   final String? videoUrl;
   final String? videoPath;
   final String? caption;
-  // final String id;
-  VideoBlock({
-    Key? key,
-    this.videoUrl,
-    this.videoPath,
-    this.caption,
+
+  VideoBlockData({
     required String id,
     String type = 'video',
-  })  : assert(videoUrl != null || videoPath != null),
-        super(
-          key: key,
-          id: id,
-          type: type,
-        );
+    this.caption,
+    this.videoPath,
+    this.videoUrl,
+  }) : super(id: id, type: type);
 
   @override
-  VideoBlockState createState() => VideoBlockState();
-
-  @override
-  late StatefulBlockElement element;
+  Widget createPreview() => VideoBlock(
+        data: this,
+      );
 
   @override
   Map<String, dynamic> toMap() => {
@@ -50,9 +37,23 @@ class VideoBlock extends StatefulBlock {
           'caption': 'TODO'
         }
       };
+}
+
+/// [buildForPreview] return [VideoBlock] directly
+/// TODO: to set custom aspect ratio of the [VideoPlayer]
+/// TODO: shoudl fallback to request vidoe resources if [videoUrl] not link to static video files
+/// TODO: support Youtube video
+/// TODO: add vidoe width & height
+/// TODO: enable video caption
+class VideoBlock extends StatefulBlock<VideoBlockData> {
+  // final String id;
+  const VideoBlock({
+    Key? key,
+    required VideoBlockData data,
+  }) : super(key: key, data: data);
 
   @override
-  Widget buildForPreview() => this;
+  VideoBlockState createState() => VideoBlockState();
 }
 
 class VideoBlockState extends BlockState<VideoBlock> {
@@ -61,13 +62,16 @@ class VideoBlockState extends BlockState<VideoBlock> {
   bool _displayControl = true;
 
   @override
+  VideoBlockData get data => widget.data;
+
+  @override
   void initState() {
     super.initState();
 
-    if (widget.videoUrl != null) {
-      _controller = VideoPlayerController.network(widget.videoUrl!);
+    if (data.videoUrl != null) {
+      _controller = VideoPlayerController.network(data.videoUrl!);
     } else {
-      final file = File(widget.videoPath!);
+      final file = File(data.videoPath!);
       _controller = VideoPlayerController.file(file);
     }
 
@@ -82,6 +86,10 @@ class VideoBlockState extends BlockState<VideoBlock> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
+    setBlockSize(context);
+
     final width = MediaQuery.of(context).size.width * 0.6;
 
     return GestureDetector(

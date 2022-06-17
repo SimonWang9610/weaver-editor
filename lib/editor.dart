@@ -8,13 +8,13 @@ import 'package:weaver_editor/components/animated_block_list.dart';
 import 'package:weaver_editor/components/draggble_block_wrapper.dart';
 import 'package:weaver_editor/delegates/block_manage_delegate.dart';
 import 'package:weaver_editor/delegates/editor_scroll_delegate.dart';
-import 'package:weaver_editor/editor_toolbar.dart';
+import 'package:weaver_editor/toolbar/editor_toolbar.dart';
 import 'package:weaver_editor/delegates/block_creator_delegate.dart';
 import 'package:weaver_editor/components/overlays/overlay_manager.dart';
 import 'package:weaver_editor/models/editor_metadata.dart';
 import 'package:weaver_editor/screens/preview.dart';
 import 'package:weaver_editor/widgets/editor_appbar.dart';
-import 'components/toolbar/toolbar_widget.dart';
+import 'toolbar/widgets/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
 import 'models/types.dart';
 import 'widgets/block_control_widget.dart';
@@ -70,7 +70,7 @@ class _WeaverEditorState extends State<WeaverEditor> {
 
   @override
   Widget build(BuildContext context) {
-    print('create editor');
+    print('create editor: title: ${widget.metadata.title}');
 
     return WillPopScope(
       child: GestureDetector(
@@ -125,18 +125,13 @@ class _WeaverEditorState extends State<WeaverEditor> {
             ),
           ),
         ),
-        onTap: () => controller.manager.removeOverlay(
-          playReverseAnimation: true,
-        ),
+        onTap: () {
+          controller.manager.removeOverlay(
+            playReverseAnimation: true,
+          );
+        },
       ),
       onWillPop: () async {
-        // final result = await EditorProvider().save(
-        //   controller.id,
-        //   controller.title,
-        //   controller.blocks,
-        // );
-
-        // return result > 0;
         return true;
       },
     );
@@ -160,20 +155,6 @@ class EditorController
     required EditorMetadata metadata,
   })  : manager = BlockManager(),
         data = metadata.copyWith(id: nanoid(36)) {
-    // if (blockData == null) {
-    //   _blocks = [];
-    // } else {
-    //   _blocks = List.generate(
-    //     blockData.length,
-    //     (index) {
-    //       final block = blockData['$index'];
-    //       print('$index: $block');
-    //       return BlockFactory().fromMap(block, defaultStyle);
-    //     },
-    //     growable: true,
-    //   );
-    // }
-
     _blocks = data.getBlocks(defaultStyle);
   }
 

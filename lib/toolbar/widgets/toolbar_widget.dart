@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/components/toolbar/block_format_widget.dart';
-import 'package:weaver_editor/components/toolbar/block_header_widget.dart';
 import 'package:weaver_editor/components/overlays/block_align_overlay.dart';
-import '../../editor_toolbar.dart';
+
+import 'block_format_widget.dart';
+import 'block_header_widget.dart';
+import '../../toolbar/editor_toolbar.dart';
 
 class EditorToolbarWidget extends StatefulWidget {
   final EditorToolbar toolbar;

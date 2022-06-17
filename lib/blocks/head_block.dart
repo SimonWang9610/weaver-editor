@@ -2,53 +2,66 @@ import 'package:flutter/material.dart';
 
 import 'leaf_text_block.dart';
 import '../models/types.dart';
-import '../models/format_node.dart';
+import '../models/nodes/format_node.dart';
 import '../extensions/headerline_ext.dart';
 
-class HeaderBlock extends LeafTextBlock {
-  HeaderBlock({
-    Key? key,
-    required String id,
+class HeaderBlockData extends TextBlockData {
+  late HeaderLine level;
+
+  HeaderBlockData({
+    this.level = HeaderLine.level1,
     required TextStyle style,
-    String? text,
-    FormatNode? initNode,
-    TextAlign? align,
+    required String id,
     String type = 'header',
+    String text = '',
+    FormatNode? headNode,
+    TextAlign align = TextAlign.start,
   }) : super(
-          key: key,
           id: id,
-          style: style,
           type: type,
-          text: text,
+          style: style,
+          headNode: headNode,
           align: align,
-          initNode: initNode,
-        );
+          text: text,
+        ) {
+    level = style.fontSize!.sizeToHeaderLine();
+  }
+
+  bool adoptLevel(HeaderLine value) {
+    if (level != value) {
+      level = value;
+      headNode!.style = headNode!.style.copyWith(
+        fontSize: level.size,
+      );
+      return true;
+    }
+    return false;
+  }
 
   @override
-  Widget buildForPreview() {
-    final state = element.state as HeaderBlockState;
+  Widget createPreview() {
+    assert(headNode != null);
+
     return Text(
-      state.controller.text,
-      style: state.headNode.style,
-      textAlign: state.align ?? TextAlign.center,
+      text,
+      style: headNode?.style ?? style,
+      textAlign: align,
     );
   }
 
   @override
   Map<String, dynamic> toMap() {
-    final state = element.state as HeaderBlockState;
+    late int headerLevel;
 
-    late int level;
-
-    switch (state.level) {
+    switch (level) {
       case HeaderLine.level1:
-        level = 1;
+        headerLevel = 1;
         break;
       case HeaderLine.level2:
-        level = 2;
+        headerLevel = 2;
         break;
       case HeaderLine.level3:
-        level = 3;
+        headerLevel = 3;
         break;
     }
 
@@ -57,61 +70,33 @@ class HeaderBlock extends LeafTextBlock {
       'time': DateTime.now().millisecondsSinceEpoch,
       'type': type,
       'data': {
-        'level': level,
-        'text': state.headNode.toMap(state.controller.text, ''),
-        'alignment': state.align?.name ?? TextAlign.center.name,
+        'level': headerLevel,
+        'text': headNode?.toPlainText(text, '') ?? '',
+        'alignment': align.name,
       }
     };
   }
+}
+
+class HeaderBlock extends LeafTextBlock<HeaderBlockData> {
+  const HeaderBlock({
+    Key? key,
+    required HeaderBlockData data,
+    String hintText = 'Add Header',
+  }) : super(
+          key: key,
+          data: data,
+          hintText: hintText,
+        );
 
   @override
   HeaderBlockState createState() => HeaderBlockState();
 }
 
-class HeaderBlockState extends LeafTextBlockState {
-  late HeaderLine level;
-
-  @override
-  void initState() {
-    super.initState();
-    level = widget.style.fontSize!.sizeToHeaderLine();
-  }
-
+class HeaderBlockState extends LeafTextBlockState<HeaderBlockData> {
   void changeHeaderLevel(HeaderLine newLevel) {
-    if (level != newLevel) {
-      level = newLevel;
-      headNode.style = headNode.style.copyWith(
-        fontSize: level.size,
-      );
+    if (data.adoptLevel(newLevel)) {
       setState(() {});
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-
-    return TextField(
-      strutStyle: strut,
-      style: widget.style,
-      textAlign: align ?? TextAlign.center,
-      decoration: InputDecoration(
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(2),
-          borderSide: const BorderSide(
-            color: Colors.white38,
-            width: 1,
-          ),
-        ),
-        hintText: 'Add Header',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(2),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      controller: controller,
-      focusNode: focus,
-      maxLines: null,
-    );
   }
 }

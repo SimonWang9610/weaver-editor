@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/models/hyper_link_node.dart';
+import 'package:weaver_editor/models/nodes/hyper_link_node.dart';
 
-import '../extensions/text_style_ext.dart';
+import '../../extensions/text_style_ext.dart';
 
-import 'editing_selection.dart';
+import '../editing_selection.dart';
 import 'block_range.dart';
 import 'node_pair.dart';
-import 'types.dart';
+import '../types.dart';
 
 class FormatNode {
   FormatNode? previous;
@@ -66,7 +66,7 @@ class FormatNode {
     );
   }
 
-  String toMap(String content, String result) {
+  String toPlainText(String content, String result) {
     final text = content.characters.getRange(range.start, range.end).string;
 
     if (text.isNotEmpty) {
@@ -74,7 +74,7 @@ class FormatNode {
     }
 
     if (next != null) {
-      result = next!.toMap(content, result);
+      result = next!.toPlainText(content, result);
     }
     return result;
   }

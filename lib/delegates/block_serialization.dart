@@ -1,4 +1,4 @@
-import '../models/parsed_node.dart';
+import '../models/nodes/parsed_node.dart';
 
 class BlockDeserializer with DeserializerHelper {
   static final RegExp reg = RegExp(r"<[^>]*>", multiLine: true);

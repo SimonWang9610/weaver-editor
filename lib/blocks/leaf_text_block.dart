@@ -1,156 +1,138 @@
 import 'package:flutter/material.dart';
+import 'package:weaver_editor/delegates/text_operation_delegate.dart';
 import '../controller/block_editing_controller.dart';
 import '../editor.dart';
-import '../models/format_node.dart';
-import '../delegates/text_operation_transformer.dart';
-import '../delegates/toolbar_attach_delegate.dart';
+import '../models/nodes/format_node.dart';
+import '../models/data/block_data.dart';
 import 'base_block.dart';
 
-/// in preview mode, we do not allow to edit [LeafTextBlock]
-/// so we will Wrap its [FormatNode] using [RichText]
-/// to apply [TextStyle] and enable hit testing
-/// after [LeafTextBlockState] is initialized, we must [handleFocusChange]
-/// to determine if we need to attach/detach [EditorToolbar] by [EditorBlockProvider]
-///
-/// 1)
-/// when restore blocks from remote or local databases
-/// we must deserialize json-blocks to [ParsedNode] by [BlockDeserializer]
-/// so that we could restore its [headNode], which will be [initNode], from [ParsedNode]
-/// when deserializing, we also extract pure text string from block data, which will be [text]
-///
-/// 2)
-/// when creating a new block, [initNode] and [text] will be null
-class LeafTextBlock extends StatefulBlock {
+class TextBlockData extends BlockData {
   final TextStyle style;
-  final String? text;
-  final FormatNode? initNode;
-  final TextAlign? align;
-  // final String id;
-  LeafTextBlock({
-    Key? key,
-    String type = 'paragraph',
+  TextAlign align;
+  FormatNode? headNode;
+  String text;
+
+  TextBlockData({
     required this.style,
     required String id,
-    this.initNode,
-    this.text,
-    this.align,
-  }) : super(
-          key: key,
-          id: id,
-          type: type,
-        );
+    String type = 'paragraph',
+    this.text = '',
+    this.headNode,
+    this.align = TextAlign.start,
+  }) : super(id: id, type: type);
+
+  void dispose() {
+    headNode?.dispose();
+  }
+
+  bool adoptAlign(TextAlign value) {
+    if (align != value) {
+      align = value;
+      return true;
+    }
+    return false;
+  }
 
   @override
-  BlockState<LeafTextBlock> createState() => LeafTextBlockState();
-
-  @override
-  late StatefulBlockElement element;
-
-  @override
-  Widget buildForPreview() {
-    final state = element.state as LeafTextBlockState;
+  Widget createPreview() {
+    assert(headNode != null);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: RichText(
-        textAlign: state.align ?? TextAlign.start,
-        text: state._node.build(state.controller.text),
+        textAlign: align,
+        text: headNode!.build(text),
       ),
     );
   }
 
   @override
   Map<String, dynamic> toMap() {
-    final state = element.state as LeafTextBlockState;
-
     return {
       'id': id,
       'time': DateTime.now().millisecondsSinceEpoch,
-      'type': 'paragraph',
+      'type': type,
       'data': {
-        'text': state.headNode.toMap(state.controller.text, ''),
-        'alignment': state.align?.name ?? TextAlign.start.name,
+        'text': headNode?.toPlainText(text, '') ?? '',
+        'alignment': align.name,
       }
     };
   }
 }
 
-class LeafTextBlockState extends BlockState<LeafTextBlock>
-    with EditorToolbarDelegate, LeafTextBlockTransformer {
-  late final BlockEditingController controller;
-
-  final FocusNode focus = FocusNode();
-  late FormatNode _node;
-
-  @override
-  FormatNode get headNode => _node;
+class LeafTextBlock<T extends TextBlockData> extends StatefulBlock<T> {
+  final String hintText;
+  const LeafTextBlock({
+    Key? key,
+    this.hintText = 'Write Something',
+    required T data,
+  }) : super(key: key, data: data);
 
   @override
-  set headNode(FormatNode newNode) => _node = newNode;
+  BlockState<LeafTextBlock> createState() => LeafTextBlockState();
+}
 
-  StrutStyle get strut => StrutStyle.fromTextStyle(widget.style);
-  set strut(StrutStyle newStrut) => strut = newStrut;
+class LeafTextBlockState<T extends TextBlockData>
+    extends BlockState<LeafTextBlock<T>> {
+  late final BlockEditingController<T> controller;
+  late final TextOperationDelegate<T> _delegate;
+
+  final FocusNode _focus = FocusNode();
+
+  @override
+  T get data => widget.data;
 
   @override
   void initState() {
     super.initState();
+    _delegate = TextOperationDelegate<T>(data);
 
-    // final TextEditingValue value = widget.text == null
-    //     ? TextEditingValue.empty
-    //     : TextEditingValue(
-    //         text: widget.text!,
-    //         selection: TextSelection.collapsed(
-    //           offset: widget.text!.characters.length,
-    //         ),
-    //       );
-
-    // controller = BlockEditingController.fromValue(
-    //   block: this,
-    //   value: value,
-    // );
-    controller = BlockEditingController(
-      block: this,
-      text: widget.text,
+    controller = BlockEditingController<T>(
+      delegate: _delegate,
+      focus: _focus,
+      text: data.text,
     );
 
-    _node = widget.initNode ??
-        FormatNode(
-          selection: controller.selection,
-          style: widget.style,
-        );
+    _focus.addListener(handleFocusChange);
 
-    defaultStyle = widget.style;
-
-    align = widget.align;
-
-    focus.addListener(handleFocusChange);
-
-    if (widget.initNode == null) {
-      focus.requestFocus();
+    if (data.headNode == null) {
+      _focus.requestFocus();
     }
+
+    data.headNode ??= FormatNode(
+      selection: controller.selection,
+      style: data.style,
+    );
+
+    controller.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+
+    // setBlockSize(context);
   }
 
   @override
   void dispose() {
-    focus.removeListener(handleFocusChange);
+    _delegate.dispose();
     controller.dispose();
-    focus.dispose();
-    _node.dispose();
+    _focus.removeListener(handleFocusChange);
+    _focus.dispose();
     super.dispose();
   }
 
-  @override
   void handleFocusChange() {
     final editorController = EditorController.of(context);
 
-    if (focus.hasFocus) {
-      attachedToolbar = editorController.attachBlock(controller);
-      attachedToolbar?.executeTaskAfterAttached();
+    if (_focus.hasFocus) {
+      _delegate.attachedToolbar = editorController.attachBlock(controller);
+      _delegate.performTaskAfterAttached();
 
       print('toolbar has attached to block: ${widget.key}');
     } else {
       // blockProvider.detachContentBlock();
-      attachedToolbar = null;
+      _delegate.detach();
       print('toolbar has been detached from ${widget.key}');
     }
   }
@@ -161,11 +143,13 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
 
     super.build(context);
 
+    setBlockSize(context);
+
     return TextField(
       enabled: true,
-      strutStyle: strut,
-      style: widget.style,
-      textAlign: align ?? TextAlign.start,
+      strutStyle: StrutStyle.fromTextStyle(data.style),
+      style: data.style,
+      textAlign: data.align,
       decoration: InputDecoration(
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(2),
@@ -174,14 +158,14 @@ class LeafTextBlockState extends BlockState<LeafTextBlock>
             width: 1,
           ),
         ),
-        hintText: 'Write something',
+        hintText: widget.hintText,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(2),
           borderSide: BorderSide.none,
         ),
       ),
       controller: controller,
-      focusNode: focus,
+      focusNode: _focus,
       maxLines: null,
     );
   }

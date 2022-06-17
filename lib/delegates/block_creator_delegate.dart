@@ -13,9 +13,11 @@ mixin BlockCreationDelegate {
   BaseBlock createParagraphBlock(TextStyle defaultStyle) {
     final id = generateId();
     return LeafTextBlock(
-      id: id,
       key: ValueKey(id),
-      style: defaultStyle,
+      data: TextBlockData(
+        id: id,
+        style: defaultStyle,
+      ),
     );
   }
 
@@ -23,13 +25,15 @@ mixin BlockCreationDelegate {
     final id = generateId();
 
     return HeaderBlock(
-      id: id,
       key: ValueKey(id),
-      align: TextAlign.center,
-      style: TextStyle(
-        color: Colors.black,
-        fontWeight: FontWeight.bold,
-        fontSize: HeaderLine.level1.size,
+      data: HeaderBlockData(
+        id: id,
+        align: TextAlign.center,
+        style: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: HeaderLine.level1.size,
+        ),
       ),
     );
   }
@@ -38,11 +42,13 @@ mixin BlockCreationDelegate {
     final id = generateId();
 
     return ImageBlock(
-      id: id,
       key: ValueKey(id),
-      imageUrl: data.url,
-      imagePath: data.file?.path,
-      caption: data.caption,
+      data: ImageBlockData(
+        id: id,
+        imageUrl: data.url,
+        imagePath: data.file?.path,
+        caption: data.caption,
+      ),
     );
   }
 
@@ -50,11 +56,13 @@ mixin BlockCreationDelegate {
     final id = generateId();
 
     return VideoBlock(
-      id: id,
       key: ValueKey(id),
-      videoPath: data.file?.path,
-      videoUrl: data.url,
-      caption: data.caption,
+      data: VideoBlockData(
+        id: id,
+        videoPath: data.file?.path,
+        videoUrl: data.url,
+        caption: data.caption,
+      ),
     );
   }
 }

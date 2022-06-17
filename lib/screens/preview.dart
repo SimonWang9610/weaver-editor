@@ -41,7 +41,7 @@ class BlockPreview extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 itemCount: blocks.length,
-                itemBuilder: (_, index) => blocks[index].buildForPreview(),
+                itemBuilder: (_, index) => blocks[index].preview,
               ),
             ),
           ],

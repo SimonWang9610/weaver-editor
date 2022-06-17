@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:weaver_editor/models/data/block_data.dart';
+
 /// [id] the block identity
 /// [element] the current active [Element] of the block
 /// [buildForPreview] build preview widgets
@@ -7,36 +9,39 @@ import 'package:flutter/material.dart';
 ///   2) return itself if the block is [StatelessBlock]
 ///
 /// TODO: implement methods to serialize/deserialize [BaseBlock] to/from [Map]
-abstract class BaseBlock<T extends Element> with BaseBlockConvert {
+abstract class BaseBlock<T extends BlockData> {
+  T get data;
+
+  Widget get preview;
   String get id;
-
-  String get type;
-  late T element;
-
-  Widget buildForPreview();
+  Offset? get offset;
+  Map<String, dynamic> get map;
 }
 
 /// when the widget creates [Element], binding its [Element] to [element]
 /// so that we could access its [State] in the block widget
 /// ? [element] will be disposed correctly once the whole widget is removed
 
-abstract class StatefulBlock extends StatefulWidget
-    implements BaseBlock<StatefulBlockElement> {
+abstract class StatefulBlock<T extends BlockData> extends StatefulWidget
+    implements BaseBlock<T> {
   @override
-  final String id;
-  @override
-  final String type;
-  StatefulBlock({
+  final T data;
+  const StatefulBlock({
     Key? key,
-    required this.id,
-    required this.type,
+    required this.data,
   }) : super(key: key);
 
   @override
-  StatefulBlockElement createElement() {
-    element = StatefulBlockElement(this);
-    return element;
-  }
+  Widget get preview => data.createPreview();
+
+  @override
+  Map<String, dynamic> get map => data.toMap();
+
+  @override
+  String get id => data.id;
+
+  @override
+  Offset? get offset => data.bottom;
 }
 
 /// each [StatefulBlock] will extend [BlockState] to create its [State]
@@ -45,45 +50,48 @@ abstract class BlockState<T extends StatefulBlock> extends State<T>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+
+  BlockData get data => widget.data;
+
+  /// [BuildContext.findRenderObject] only returns a valid result after completing build phase
+  void setBlockSize(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final box = context.findRenderObject() as RenderBox?;
+      final bottomLeft = box?.paintBounds.bottomLeft;
+      final offset = box?.localToGlobal(bottomLeft ?? Offset.zero);
+      data.updateBlockSize(newSize: box?.size, offset: offset);
+    });
+  }
 }
 
-abstract class StatelessBlock extends StatelessWidget
-    implements BaseBlock<StatelessBlockElement> {
+abstract class StatelessBlock<T extends BlockData> extends StatelessWidget
+    implements BaseBlock<T> {
   @override
-  final String id;
-  @override
-  final String type;
+  final T data;
 
-  StatelessBlock({
+  const StatelessBlock({
     Key? key,
-    required this.id,
-    required this.type,
+    required this.data,
   }) : super(key: key);
 
   @override
-  StatelessBlockElement createElement() {
-    element = StatelessBlockElement(this);
-    return element;
-  }
+  Widget get preview => data.createPreview();
 
   @override
-  Widget buildForPreview() => Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 5,
-        ),
-        child: this,
-      );
-}
+  Map<String, dynamic> get map => data.toMap();
 
-/// actually, no need to create below custom [Elements]
-class StatefulBlockElement extends StatefulElement {
-  StatefulBlockElement(StatefulBlock block) : super(block);
-}
+  @override
+  String get id => data.id;
 
-class StatelessBlockElement extends StatelessElement {
-  StatelessBlockElement(StatelessBlock block) : super(block);
-}
+  @override
+  Offset? get offset => data.bottom;
 
-mixin BaseBlockConvert {
-  Map<String, dynamic> toMap();
+  void setBlockSize(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final box = context.findRenderObject() as RenderBox?;
+      final bottomLeft = box?.paintBounds.bottomLeft;
+      final offset = box?.localToGlobal(bottomLeft ?? Offset.zero);
+      data.updateBlockSize(newSize: box?.size, offset: offset);
+    });
+  }
 }

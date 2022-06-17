@@ -3,13 +3,13 @@ import 'package:weaver_editor/blocks/head_block.dart';
 import 'package:weaver_editor/blocks/leaf_text_block.dart';
 import 'package:weaver_editor/blocks/video_block.dart';
 import 'package:weaver_editor/delegates/block_serialization.dart';
-import 'package:weaver_editor/models/hyper_link_node.dart';
-import 'package:weaver_editor/models/parsed_node.dart';
+import 'package:weaver_editor/models/nodes/hyper_link_node.dart';
+import 'package:weaver_editor/models/nodes/parsed_node.dart';
 
 import 'base_block.dart';
 import 'image_block.dart';
 import '../models/types.dart';
-import '../models/format_node.dart';
+import '../models/nodes/format_node.dart';
 import '../extensions/headerline_ext.dart';
 import '../extensions/text_style_ext.dart';
 
@@ -66,10 +66,12 @@ class BlockFactory {
 
     return ImageBlock(
       key: ValueKey(id),
-      id: id,
-      imagePath: path,
-      imageUrl: url,
-      caption: map['caption'],
+      data: ImageBlockData(
+        id: id,
+        imagePath: path,
+        imageUrl: url,
+        caption: map['caption'],
+      ),
     );
   }
 
@@ -85,10 +87,12 @@ class BlockFactory {
 
     return VideoBlock(
       key: ValueKey(id),
-      id: id,
-      videoUrl: url,
-      videoPath: path,
-      caption: map['caption'],
+      data: VideoBlockData(
+        id: id,
+        videoUrl: url,
+        videoPath: path,
+        caption: map['caption'],
+      ),
     );
   }
 
@@ -111,11 +115,13 @@ class BlockFactory {
 
     return HeaderBlock(
       key: ValueKey(id),
-      id: id,
-      text: text,
-      align: align?.toTextAlign() ?? TextAlign.start,
-      style: style,
-      initNode: headNode,
+      data: HeaderBlockData(
+        id: id,
+        text: text,
+        align: align?.toTextAlign() ?? TextAlign.start,
+        style: style,
+        headNode: headNode,
+      ),
     );
   }
 
@@ -133,11 +139,13 @@ class BlockFactory {
 
     return LeafTextBlock(
       key: ValueKey(id),
-      style: headNode.style,
-      id: id,
-      initNode: headNode,
-      text: text,
-      align: align?.toTextAlign() ?? TextAlign.start,
+      data: TextBlockData(
+        style: headNode.style,
+        id: id,
+        headNode: headNode,
+        text: text,
+        align: align?.toTextAlign() ?? TextAlign.start,
+      ),
     );
   }
 

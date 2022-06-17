@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/blocks/leaf_text_block.dart';
+import 'package:weaver_editor/delegates/text_operation_delegate.dart';
 
 import '../blocks/head_block.dart';
 import '../models/types.dart';
 
-mixin ToolbarChangeDelegate on TextEditingController {
-  LeafTextBlockState get block;
+mixin ToolbarChangeDelegate<T extends TextBlockData> on TextEditingController {
+  TextOperationDelegate<T> get delegate;
 
-  bool get isHeaderBlock => block is HeaderBlockState;
-
-  TextStyle get blockDefaultStyle => block.defaultStyle;
-
-  void unfocus() {
-    if (block.focus.hasFocus) {
-      block.focus.unfocus();
-    }
-  }
+  TextStyle get blockDefaultStyle => delegate.defaultStyle;
 
   void mayApplyStyle() {
     if (!selection.isCollapsed) {
@@ -24,12 +17,20 @@ mixin ToolbarChangeDelegate on TextEditingController {
   }
 
   void applyHeaderLevel(HeaderLine newLevel) {
-    assert(isHeaderBlock);
+    assert(delegate.data is HeaderBlockData);
 
-    (block as HeaderBlockState).changeHeaderLevel(newLevel);
+    final isAdopted = (delegate.data as HeaderBlockData).adoptLevel(newLevel);
+
+    if (isAdopted) {
+      notifyListeners();
+    }
   }
 
   void applyAlign(TextAlign value) {
-    block.changeBlockAlign(value);
+    final isAdopted = delegate.data.adoptAlign(value);
+
+    if (isAdopted) {
+      notifyListeners();
+    }
   }
 }

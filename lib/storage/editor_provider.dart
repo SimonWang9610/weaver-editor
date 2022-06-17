@@ -2,15 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:weaver_editor/blocks/block_factory.dart';
 
 import '../blocks/base_block.dart';
 
-typedef BlockData = Map<String, dynamic>;
-
 class Publication {
   final List<BaseBlock> blocks;
-  final BlockData blockData;
+  final Map<String, dynamic> blockData;
   final String id;
   final String title;
   final int lastUpdate;
@@ -57,7 +54,7 @@ class Publication {
     final Map<String, dynamic> content = {};
 
     for (int i = 0; i < blocks.length; i++) {
-      final block = blocks[i].toMap();
+      final block = blocks[i].map;
       content['$i'] = block;
     }
     print(content);

@@ -5,11 +5,11 @@ import '../blocks/base_block.dart';
 class EditorMetadata {
   final String title;
   final String? id;
-  final Map<String, dynamic>? blockData;
+  final Map<String, dynamic>? blocks;
 
   EditorMetadata({
     required this.title,
-    this.blockData,
+    this.blocks,
     this.id,
   });
 
@@ -22,16 +22,16 @@ class EditorMetadata {
     return EditorMetadata(
       title: title ?? this.title,
       id: this.id ?? id,
-      blockData: data ?? blockData,
+      blocks: data ?? blocks,
     );
   }
 
   List<BaseBlock> getBlocks(TextStyle style) {
-    if (blockData != null && blockData!.isNotEmpty) {
+    if (blocks != null && blocks!.isNotEmpty) {
       return List.generate(
-        blockData!.length,
+        blocks!.length,
         (index) {
-          final block = blockData!['$index'];
+          final block = blocks!['$index'];
           return BlockFactory().fromMap(block, style);
         },
       );
