@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-import '../blocks/base_block.dart';
+import 'package:weaver_editor/base/block_base.dart';
 
 class Publication {
-  final List<BaseBlock> blocks;
+  final List<BlockBase> blocks;
   final Map<String, dynamic> blockData;
   final String id;
   final String title;
@@ -33,7 +33,7 @@ class Publication {
       blockData: content,
     );
 
-    // final List<BaseBlock> blocks = List.generate(
+    // final List<BlockBase> blocks = List.generate(
     //   content.length,
     //   (index) {
     //     final block = content['$index'];
@@ -54,7 +54,7 @@ class Publication {
     final Map<String, dynamic> content = {};
 
     for (int i = 0; i < blocks.length; i++) {
-      final block = blocks[i].map;
+      final block = blocks[i].json;
       content['$i'] = block;
     }
     print(content);
@@ -92,7 +92,7 @@ class EditorProvider {
     );
   }
 
-  Future<int> save(String id, String title, List<BaseBlock> blocks) async {
+  Future<int> save(String id, String title, List<BlockBase> blocks) async {
     final publication = Publication(
       id,
       title,

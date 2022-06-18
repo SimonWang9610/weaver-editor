@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:weaver_editor/base/block_base.dart';
 import 'package:weaver_editor/blocks/block_factory.dart';
-import '../blocks/base_block.dart';
 
 class EditorMetadata {
   final String title;
@@ -26,7 +26,7 @@ class EditorMetadata {
     );
   }
 
-  List<BaseBlock> getBlocks(TextStyle style) {
+  List<BlockBase> getBlocks(TextStyle style) {
     if (blocks != null && blocks!.isNotEmpty) {
       return List.generate(
         blocks!.length,

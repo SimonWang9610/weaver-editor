@@ -2,18 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:nanoid/nanoid.dart';
+import 'package:weaver_editor/base/block_base.dart';
 
-import 'package:weaver_editor/blocks/base_block.dart';
 import 'package:weaver_editor/components/animated_block_list.dart';
 import 'package:weaver_editor/components/draggble_block_wrapper.dart';
-import 'package:weaver_editor/delegates/block_manage_delegate.dart';
-import 'package:weaver_editor/delegates/editor_scroll_delegate.dart';
 import 'package:weaver_editor/toolbar/editor_toolbar.dart';
-import 'package:weaver_editor/delegates/block_creator_delegate.dart';
+import 'package:weaver_editor/core/delegates/delegates.dart';
 import 'package:weaver_editor/components/overlays/overlay_manager.dart';
 import 'package:weaver_editor/models/editor_metadata.dart';
 import 'package:weaver_editor/screens/preview.dart';
 import 'package:weaver_editor/widgets/editor_appbar.dart';
+
 import 'toolbar/widgets/toolbar_widget.dart';
 import 'controller/block_editing_controller.dart';
 import 'models/types.dart';
@@ -107,8 +106,10 @@ class _WeaverEditorState extends State<WeaverEditor> {
                         index: index,
                       ),
                       itemBuilder: (_, index, animation) {
+                        final block = controller.getBlockByIndex(index);
+
                         return FadeTransition(
-                          key: ValueKey(controller.blocks[index].id),
+                          key: ValueKey(block.id),
                           opacity: animation,
                           child: DragTargetWrapper(
                             index: index,
@@ -146,7 +147,7 @@ class EditorController
       StreamController.broadcast();
 
   final BlockManager manager;
-  late final List<BaseBlock> _blocks;
+  late final List<BlockBase> _blocks;
   late final EditorMetadata data;
 
   EditorController(
@@ -169,7 +170,7 @@ class EditorController
   }
 
   @override
-  List<BaseBlock> get blocks => _blocks;
+  List<BlockBase> get blocks => _blocks;
 
   @override
   StreamController get notifier => _notifier;
@@ -212,7 +213,7 @@ class EditorController
     int? pos,
     EmbedData? data,
   }) {
-    BaseBlock? block;
+    late BlockBase block;
 
     switch (type) {
       case BlockType.paragraph:

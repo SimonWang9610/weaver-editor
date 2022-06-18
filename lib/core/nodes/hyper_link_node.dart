@@ -45,7 +45,7 @@ class HyperLinkNode extends FormatNode {
   @override
   TextSpan build(
     String content, {
-    TextStyle? forcedStyle,
+    bool inPreviewMode = false,
   }) {
     final caption = content.characters.getRange(range.start, range.end).string;
 
@@ -58,11 +58,22 @@ class HyperLinkNode extends FormatNode {
     // ! so we initialize the recognizer after the WeaverEditor has been laid out/first built
     /// it also may because some operations trigger [TapGestureRecognizer.onTap] during the first build
     /// consequently, it throws LateInitializationError
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        recognizer ??= TapGestureRecognizer()..onTap = _handleTap;
-      },
-    );
+
+    ///  only allow to tap for [inPreviewMode]
+    /// if we create [recognizer] by [addPostFrameCallback] for [inPreviewMode]
+    /// it cannot create successfully
+    if (inPreviewMode) {
+      recognizer ??= TapGestureRecognizer()..onTap = _handleTap;
+    } else {
+      // recognizer?.dispose();
+      // recognizer = null;
+
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          recognizer ??= TapGestureRecognizer()..onTap = _handleTap;
+        },
+      );
+    }
 
     final chainedSpan = next?.build(content);
 

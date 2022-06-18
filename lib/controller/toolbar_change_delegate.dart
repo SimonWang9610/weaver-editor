@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/blocks/leaf_text_block.dart';
-import 'package:weaver_editor/delegates/text_operation_delegate.dart';
+import 'package:weaver_editor/blocks/data/data.dart';
 
-import '../blocks/head_block.dart';
-import '../models/types.dart';
+import 'package:weaver_editor/core/delegates/text_operation_delegate.dart';
+import 'package:weaver_editor/models/types.dart';
 
 mixin ToolbarChangeDelegate<T extends TextBlockData> on TextEditingController {
   TextOperationDelegate<T> get delegate;

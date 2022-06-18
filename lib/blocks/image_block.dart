@@ -1,62 +1,39 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'base_block.dart';
-import '../models/data/block_data.dart';
 
-class ImageBlockData extends BlockData {
-  final String? imageUrl;
-  final String? imagePath;
-  final String? caption;
-  final double screenScale;
+import 'package:weaver_editor/base/block_base.dart';
+import 'data/image_block_data.dart';
 
-  ImageBlockData({
-    required String id,
-    String type = 'image',
-    this.imagePath,
-    this.imageUrl,
-    this.caption,
-    this.screenScale = 0.6,
-  })  : assert(imageUrl != null || imagePath != null),
-        super(id: id, type: type);
-
-  @override
-  Widget createPreview() {
-    return ImageBlock(
-      data: this,
+Widget defaultImageBlockBuilder(ImageBlockData data) => ImageBlockWidget(
+      key: ValueKey(data.id),
+      data: data,
     );
-  }
 
-  @override
-  Map<String, dynamic> toMap() => {
-        'id': id,
-        'type': type,
-        'time': DateTime.now().millisecondsSinceEpoch,
-        'data': {
-          'file': imageUrl ?? imagePath,
-          'caption': caption,
-          'withBorder': false,
-          'withBackground': false,
-          'stretched': true,
-        },
-      };
+class ImageBlock extends BlockBase<ImageBlockData> {
+  ImageBlock({
+    required ImageBlockData data,
+    BlockBuilder? builder,
+  }) : super(
+          data: data,
+          builder: builder ?? defaultImageBlockBuilder,
+        );
 }
 
-/// must override [element] to declare its [Element] type explicitly
-/// TODO: if [imageUrl] not link to static image files, like [.jpg, .png], should fallback to request image by http
-/// TODO: how [BoxFit] works
-/// TODO: enabel image caption
-class ImageBlock extends StatelessBlock<ImageBlockData> {
-  const ImageBlock({
+class ImageBlockWidget extends StatelessBlock<ImageBlockData> {
+  const ImageBlockWidget({
     Key? key,
     required ImageBlockData data,
-  }) : super(key: key, data: data);
+  }) : super(
+          key: key,
+          data: data,
+        );
 
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width * data.screenScale;
 
-    setBlockSize(context);
+    setRenderObject(context);
 
     final Image image = data.imageUrl != null
         ? Image.network(

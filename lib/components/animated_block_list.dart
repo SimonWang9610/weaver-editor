@@ -110,7 +110,7 @@ class AnimatedBlockListState extends State<AnimatedBlockList>
     _activeItemIndex = index;
     _controller.reset();
     setState(() {
-      _controller.forward();
+      _controller.forward().then((_) => _activeItemIndex = null);
     });
   }
 

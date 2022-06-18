@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
-import 'leaf_text_block.dart';
-import '../models/types.dart';
-import '../models/nodes/format_node.dart';
-import '../extensions/headerline_ext.dart';
+import 'package:weaver_editor/core/nodes/format_node.dart';
+import 'package:weaver_editor/models/types.dart';
+import 'package:weaver_editor/extensions/headerline_ext.dart';
+import 'text_block_data.dart';
 
 class HeaderBlockData extends TextBlockData {
   late HeaderLine level;
@@ -75,28 +74,5 @@ class HeaderBlockData extends TextBlockData {
         'alignment': align.name,
       }
     };
-  }
-}
-
-class HeaderBlock extends LeafTextBlock<HeaderBlockData> {
-  const HeaderBlock({
-    Key? key,
-    required HeaderBlockData data,
-    String hintText = 'Add Header',
-  }) : super(
-          key: key,
-          data: data,
-          hintText: hintText,
-        );
-
-  @override
-  HeaderBlockState createState() => HeaderBlockState();
-}
-
-class HeaderBlockState extends LeafTextBlockState<HeaderBlockData> {
-  void changeHeaderLevel(HeaderLine newLevel) {
-    if (data.adoptLevel(newLevel)) {
-      setState(() {});
-    }
   }
 }

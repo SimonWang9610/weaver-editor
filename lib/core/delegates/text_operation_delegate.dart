@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/models/nodes/format_node.dart';
+import 'package:weaver_editor/core/nodes/format_node.dart';
+import 'package:weaver_editor/core/nodes/hyper_link_node.dart';
+import 'package:weaver_editor/core/nodes/node_pair.dart';
+import 'package:weaver_editor/blocks/data/text_block_data.dart';
 
-import '../blocks/leaf_text_block.dart';
-import '../toolbar/editor_toolbar.dart';
-import '../models/editing_selection.dart';
-import '../models/nodes/node_pair.dart';
-import '../models/nodes/hyper_link_node.dart';
-import '../models/types.dart';
+import 'package:weaver_editor/toolbar/editor_toolbar.dart';
+import 'package:weaver_editor/models/editing_selection.dart';
+import 'package:weaver_editor/models/types.dart';
 
 class TextOperationDelegate<T extends TextBlockData>
     extends OperationDelegate<T> with TextOperationMixin {

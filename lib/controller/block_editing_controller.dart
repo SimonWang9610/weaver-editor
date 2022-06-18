@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/blocks/head_block.dart';
-import 'package:weaver_editor/delegates/text_operation_delegate.dart';
+import 'package:weaver_editor/blocks/data/data.dart';
+
+import 'package:weaver_editor/core/delegates/text_operation_delegate.dart';
 import 'package:weaver_editor/models/types.dart';
-import 'package:weaver_editor/blocks/leaf_text_block.dart';
 
 import 'editing_compare.dart';
 import 'toolbar_change_delegate.dart';
 
-class BlockEditingController<T extends TextBlockData>
-    extends TextEditingController
+class BlockEditingController extends TextEditingController
     with ToolbarChangeDelegate, BlockEditingCompare {
   final TextOperationDelegate _delegate;
   final FocusNode? focus;

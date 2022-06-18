@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
-import 'package:weaver_editor/blocks/base_block.dart';
+import 'package:weaver_editor/base/block_base.dart';
 
-import '../models/types.dart';
+import 'package:weaver_editor/models/types.dart';
 
 mixin BlockManageDelegate {
-  List<BaseBlock> get blocks;
+  List<BlockBase> get blocks;
   StreamController get notifier;
 
   void removeBlock(int index) {
@@ -42,13 +42,13 @@ mixin BlockManageDelegate {
     );
   }
 
-  BaseBlock getBlockById(String id) {
-    final block = blocks.singleWhere((element) => element.data.id == id);
+  BlockBase getBlockById(String id) {
+    final block = blocks.singleWhere((element) => element.id == id);
     return block;
   }
 
   int getBlockIndex(String id) {
-    return blocks.indexWhere((element) => element.data.id == id);
+    return blocks.indexWhere((element) => element.id == id);
   }
 
   Widget getBlockPreview(String id) {
@@ -60,12 +60,12 @@ mixin BlockManageDelegate {
     return blocks[index].data.id;
   }
 
-  BaseBlock getBlockByIndex(int index) {
+  BlockBase getBlockByIndex(int index) {
     return blocks[index];
   }
 
   void moveBlockTo(String blockId, int dst) {
-    final src = blocks.indexWhere((element) => element.data.id == blockId);
+    final src = blocks.indexWhere((element) => element.id == blockId);
 
     if (src > -1) {
       final block = blocks.removeAt(src);

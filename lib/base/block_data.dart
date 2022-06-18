@@ -4,7 +4,7 @@ abstract class BlockData {
   final String id;
   final String type;
   Size? size;
-  Offset? bottom;
+  Offset? offset;
 
   BlockData({required this.id, required this.type});
 
@@ -13,6 +13,6 @@ abstract class BlockData {
 
   void updateBlockSize({Size? newSize, Offset? offset}) {
     size = newSize;
-    bottom = offset;
+    offset = offset;
   }
 }

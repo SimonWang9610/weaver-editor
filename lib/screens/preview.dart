@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/blocks/base_block.dart';
+import 'package:weaver_editor/base/block_base.dart';
 import 'package:weaver_editor/storage/editor_provider.dart';
 
 class BlockPreview extends StatelessWidget {
-  final List<BaseBlock> blocks;
+  final List<BlockBase> blocks;
   final String title;
   final String id;
   const BlockPreview({

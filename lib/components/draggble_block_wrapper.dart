@@ -13,7 +13,7 @@ class DragTargetWrapper extends StatelessWidget {
     return DragTarget<String>(
       builder: (_, __, ___) {
         final block = EditorController.of(context).getBlockByIndex(index);
-        return block as Widget;
+        return block.build();
       },
       onAcceptWithDetails: (details) {
         final blockId = EditorController.of(context).getBlockId(index);

@@ -91,7 +91,7 @@ class BlockManager extends TickerProvider {
     BuildContext context, {
     required LayerLink link,
   }) {
-    unfocus(context);
+    // unfocus(context);
 
     if (_overlay != null) {
       removeOverlay();
