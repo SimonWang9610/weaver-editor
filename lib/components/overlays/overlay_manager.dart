@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:weaver_editor/components/toolbar/block_align_widget.dart';
+import 'package:weaver_editor/toolbar/widgets/block_align_widget.dart';
 import 'package:weaver_editor/components/overlays/widgets/block_manage_widget.dart';
 import 'package:weaver_editor/components/overlays/widgets/block_option_widget.dart';
 import 'package:weaver_editor/editor.dart';
@@ -40,14 +40,11 @@ class BlockManager extends TickerProvider {
     required int index,
     required OverlayDirection direction,
   }) {
+    unfocus(context);
+
     if (_overlay != null) {
       removeOverlay();
     }
-
-    final RenderBox box = context.findRenderObject() as RenderBox;
-
-    final size = box.size;
-
     // final padding = MediaQuery.of(context).padding;
     // viewPadding vs viewInset
     // [https://medium.com/flutter-community/a-flutter-guide-to-visual-overlap-padding-viewpadding-and-viewinsets-a63e214be6e8]
@@ -94,6 +91,8 @@ class BlockManager extends TickerProvider {
     BuildContext context, {
     required LayerLink link,
   }) {
+    // unfocus(context);
+
     if (_overlay != null) {
       removeOverlay();
     }
@@ -174,5 +173,9 @@ class BlockManager extends TickerProvider {
     }
     _overlay?.remove();
     _overlay = null;
+  }
+
+  void unfocus(BuildContext context) {
+    EditorController.of(context).detachBlock();
   }
 }

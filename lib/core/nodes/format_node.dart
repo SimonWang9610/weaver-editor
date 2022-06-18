@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/models/hyper_link_node.dart';
+import 'package:weaver_editor/core/nodes/hyper_link_node.dart';
 
-import '../extensions/text_style_ext.dart';
-
-import 'editing_selection.dart';
+import 'package:weaver_editor/models/editing_selection.dart';
+import 'package:weaver_editor/models/types.dart';
+import 'package:weaver_editor/extensions/text_style_ext.dart';
 import 'block_range.dart';
 import 'node_pair.dart';
-import 'types.dart';
 
 class FormatNode {
   FormatNode? previous;
@@ -48,17 +47,20 @@ class FormatNode {
     }
   }
 
-  TextSpan build(String content, {TextStyle? forcedStyle}) {
+  TextSpan build(
+    String content, {
+    bool inPreviewMode = false,
+  }) {
     final text = content.characters.getRange(range.start, range.end).string;
     // print('$range: $text, style: $style');
 
     final chainedSpan = next?.build(
       content,
-      forcedStyle: forcedStyle,
+      inPreviewMode: inPreviewMode,
     );
 
     return TextSpan(
-      style: forcedStyle ?? style,
+      style: style,
       text: text.isEmpty ? null : text,
       children: [
         if (chainedSpan != null) chainedSpan,
@@ -66,7 +68,7 @@ class FormatNode {
     );
   }
 
-  String toMap(String content, String result) {
+  String toPlainText(String content, String result) {
     final text = content.characters.getRange(range.start, range.end).string;
 
     if (text.isNotEmpty) {
@@ -74,7 +76,7 @@ class FormatNode {
     }
 
     if (next != null) {
-      result = next!.toMap(content, result);
+      result = next!.toPlainText(content, result);
     }
     return result;
   }

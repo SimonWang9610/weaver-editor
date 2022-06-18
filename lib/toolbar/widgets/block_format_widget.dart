@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/editor_toolbar.dart';
-import '../format_button.dart';
+import 'package:weaver_editor/toolbar/editor_toolbar.dart';
+import 'package:weaver_editor/components/format_button.dart';
 import 'add_link_button.dart';
 
 class BlockFormatWidget extends StatelessWidget {

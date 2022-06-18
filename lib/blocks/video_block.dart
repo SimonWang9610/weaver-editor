@@ -2,72 +2,54 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:file_picker/file_picker.dart';
-import 'base_block.dart';
 
-/// [buildForPreview] return [VideoBlock] directly
-/// TODO: to set custom aspect ratio of the [VideoPlayer]
-/// TODO: shoudl fallback to request vidoe resources if [videoUrl] not link to static video files
-/// TODO: support Youtube video
-/// TODO: add vidoe width & height
-/// TODO: enable video caption
-class VideoBlock extends StatefulBlock {
-  final String? videoUrl;
-  final String? videoPath;
-  final String? caption;
-  // final String id;
+import 'package:weaver_editor/base/block_base.dart';
+import 'data/video_block_data.dart';
+
+Widget defaultVideoBlockBuilder(VideoBlockData data) => VideoBlockWidget(
+      key: ValueKey(data.id),
+      data: data,
+    );
+
+class VideoBlock extends BlockBase<VideoBlockData> {
   VideoBlock({
+    required VideoBlockData data,
+    BlockBuilder? builder,
+  }) : super(
+          data: data,
+          builder: builder ?? defaultVideoBlockBuilder,
+        );
+}
+
+class VideoBlockWidget extends StatefulBlock<VideoBlockData> {
+  const VideoBlockWidget({
     Key? key,
-    this.videoUrl,
-    this.videoPath,
-    this.caption,
-    required String id,
-    String type = 'video',
-  })  : assert(videoUrl != null || videoPath != null),
-        super(
+    required VideoBlockData data,
+  }) : super(
           key: key,
-          id: id,
-          type: type,
+          data: data,
         );
 
   @override
   VideoBlockState createState() => VideoBlockState();
-
-  @override
-  late StatefulBlockElement element;
-
-  @override
-  Map<String, dynamic> toMap() => {
-        'id': id,
-        'type': 'embed',
-        'time': DateTime.now().millisecondsSinceEpoch,
-        'data': {
-          'service': 'local service',
-          'source': videoUrl ?? videoPath,
-          'embed': videoUrl ?? videoPath,
-          'width': 640,
-          'height': 428,
-          'caption': 'TODO'
-        }
-      };
-
-  @override
-  Widget buildForPreview() => this;
 }
 
-class VideoBlockState extends BlockState<VideoBlock> {
+class VideoBlockState extends BlockState<VideoBlockData, VideoBlockWidget> {
   late VideoPlayerController _controller;
 
   bool _displayControl = true;
 
   @override
+  VideoBlockData get data => widget.data;
+
+  @override
   void initState() {
     super.initState();
 
-    if (widget.videoUrl != null) {
-      _controller = VideoPlayerController.network(widget.videoUrl!);
+    if (data.videoUrl != null) {
+      _controller = VideoPlayerController.network(data.videoUrl!);
     } else {
-      final file = File(widget.videoPath!);
+      final file = File(data.videoPath!);
       _controller = VideoPlayerController.file(file);
     }
 
@@ -82,6 +64,10 @@ class VideoBlockState extends BlockState<VideoBlock> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
+    setRenderObject(context);
+
     final width = MediaQuery.of(context).size.width * 0.6;
 
     return GestureDetector(

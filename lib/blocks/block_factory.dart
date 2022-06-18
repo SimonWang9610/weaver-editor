@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/blocks/head_block.dart';
-import 'package:weaver_editor/blocks/leaf_text_block.dart';
-import 'package:weaver_editor/blocks/video_block.dart';
-import 'package:weaver_editor/delegates/block_serialization.dart';
-import 'package:weaver_editor/models/hyper_link_node.dart';
-import 'package:weaver_editor/models/parsed_node.dart';
+import 'package:weaver_editor/base/block_base.dart';
 
-import 'base_block.dart';
-import 'image_block.dart';
-import '../models/types.dart';
-import '../models/format_node.dart';
-import '../extensions/headerline_ext.dart';
-import '../extensions/text_style_ext.dart';
+import 'package:weaver_editor/core/delegates/block_serialization.dart';
+import 'package:weaver_editor/core/nodes/hyper_link_node.dart';
+import 'package:weaver_editor/core/nodes/parsed_node.dart';
+import 'package:weaver_editor/core/nodes/format_node.dart';
+import 'package:weaver_editor/models/types.dart';
+import 'package:weaver_editor/extensions/text_style_ext.dart';
+import 'package:weaver_editor/extensions/headerline_ext.dart';
+
+import 'blocks.dart';
 
 /// the block [map] of [fromMap] must be the format:
 /// {
@@ -35,7 +33,7 @@ class BlockFactory {
 
   BlockFactory._();
 
-  BaseBlock fromMap(Map<String, dynamic> map, TextStyle defaultStyle) {
+  BlockBase fromMap(Map<String, dynamic> map, TextStyle defaultStyle) {
     final String type = map['type'];
     final Map<String, dynamic> data = map['data'];
     final String id = map['id'];
@@ -54,7 +52,7 @@ class BlockFactory {
     }
   }
 
-  BaseBlock toImageBlock(String id, Map<String, dynamic> map) {
+  BlockBase toImageBlock(String id, Map<String, dynamic> map) {
     String? url;
     String? path;
 
@@ -65,15 +63,16 @@ class BlockFactory {
     }
 
     return ImageBlock(
-      key: ValueKey(id),
-      id: id,
-      imagePath: path,
-      imageUrl: url,
-      caption: map['caption'],
+      data: ImageBlockData(
+        id: id,
+        imagePath: path,
+        imageUrl: url,
+        caption: map['caption'],
+      ),
     );
   }
 
-  BaseBlock toVideoBlock(String id, Map<String, dynamic> map) {
+  BlockBase toVideoBlock(String id, Map<String, dynamic> map) {
     String? url;
     String? path;
 
@@ -84,15 +83,16 @@ class BlockFactory {
     }
 
     return VideoBlock(
-      key: ValueKey(id),
-      id: id,
-      videoUrl: url,
-      videoPath: path,
-      caption: map['caption'],
+      data: VideoBlockData(
+        id: id,
+        videoUrl: url,
+        videoPath: path,
+        caption: map['caption'],
+      ),
     );
   }
 
-  BaseBlock toHeaderBlock(String id, Map<String, dynamic> map) {
+  BlockBase toHeaderBlock(String id, Map<String, dynamic> map) {
     final String? align = map['alignment'];
     final num? level = map['level'];
     final TextStyle style = TextStyle(
@@ -110,16 +110,17 @@ class BlockFactory {
     final String text = extractText(map['text'], headNode);
 
     return HeaderBlock(
-      key: ValueKey(id),
-      id: id,
-      text: text,
-      align: align?.toTextAlign() ?? TextAlign.start,
-      style: style,
-      initNode: headNode,
+      data: HeaderBlockData(
+        id: id,
+        text: text,
+        align: align?.toTextAlign() ?? TextAlign.start,
+        style: style,
+        headNode: headNode,
+      ),
     );
   }
 
-  BaseBlock toTextBlock(
+  BlockBase toTextBlock(
       String id, Map<String, dynamic> map, TextStyle defaultStyle) {
     final FormatNode headNode = FormatNode.position(
       0,
@@ -131,13 +132,14 @@ class BlockFactory {
 
     final String text = extractText(map['text'], headNode);
 
-    return LeafTextBlock(
-      key: ValueKey(id),
-      style: headNode.style,
-      id: id,
-      initNode: headNode,
-      text: text,
-      align: align?.toTextAlign() ?? TextAlign.start,
+    return TextBlock(
+      data: TextBlockData(
+        style: headNode.style,
+        id: id,
+        headNode: headNode,
+        text: text,
+        align: align?.toTextAlign() ?? TextAlign.start,
+      ),
     );
   }
 
