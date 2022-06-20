@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/types.dart';
+import 'package:weaver_editor/models/types.dart';
 
 class HyperLinkButton extends StatelessWidget {
   final VoidCallback onPressed;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:weaver_editor/editor.dart' show EditorController;
-import 'package:weaver_editor/controller/block_editing_controller.dart';
+import 'package:weaver_editor/core/controller/block_editing_controller.dart';
 import 'package:weaver_editor/core/delegates/text_operation_delegate.dart';
 import 'package:weaver_editor/core/nodes/format_node.dart';
+import 'package:weaver_editor/editor.dart';
 import 'package:weaver_editor/extensions/headerline_ext.dart';
 import 'package:weaver_editor/utils/helper.dart';
 import 'data/text_block_data.dart';
@@ -90,6 +90,8 @@ class TextBlockState<T extends TextBlockData>
 
     _focus.addListener(_handleFocusChange);
 
+    // if this block is empty and created newly
+    // move focus to this current block
     if (data.headNode == null) {
       _focus.requestFocus();
     }
@@ -111,7 +113,6 @@ class TextBlockState<T extends TextBlockData>
   void dispose() {
     _delegate.dispose();
     _controller.dispose();
-    _focus.removeListener(_handleFocusChange);
     _focus.dispose();
     super.dispose();
   }
@@ -150,7 +151,7 @@ class TextBlockState<T extends TextBlockData>
   }
 
   void _handleFocusChange() {
-    final editorController = EditorController.of(context);
+    final editorController = WeaverEditorProvider.of(context);
 
     if (_focus.hasFocus) {
       _delegate.attachedToolbar = editorController.attachBlock(_controller);

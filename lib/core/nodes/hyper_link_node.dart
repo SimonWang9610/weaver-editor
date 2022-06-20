@@ -54,8 +54,8 @@ class HyperLinkNode extends FormatNode {
     // ! must create recognizer after the first build is completed
     // ! otherwise, it will throw recognizer lateInitializationError
     // ! it may because the consecutive two build of a block restored from local database
-    // ! when the first build, the WeaverEditor has not been laid out completely.
-    // ! so we initialize the recognizer after the WeaverEditor has been laid out/first built
+    // ! when the first build, the WeaverEditorProvider has not been laid out completely.
+    // ! so we initialize the recognizer after the WeaverEditorProvider has been laid out/first built
     /// it also may because some operations trigger [TapGestureRecognizer.onTap] during the first build
     /// consequently, it throws LateInitializationError
 

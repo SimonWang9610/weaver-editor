@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/models/types.dart';
-import '../../editor.dart' show EditorController;
+import '../../editor.dart';
 
 class BlockOptionOverlay extends StatelessWidget {
   final int index;
@@ -21,7 +21,7 @@ class BlockOptionOverlay extends StatelessWidget {
       link: link,
       child: IconButton(
         onPressed: () {
-          final manager = EditorController.of(context).manager;
+          final manager = WeaverEditorProvider.of(context).manager;
 
           final overlay = manager.createOptionOverlay(
             context,

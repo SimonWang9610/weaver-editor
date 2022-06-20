@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/toolbar/toolbar_delegates.dart';
 import 'package:weaver_editor/models/types.dart';
-import 'package:weaver_editor/controller/block_editing_controller.dart';
+import 'package:weaver_editor/core/controller/block_editing_controller.dart';
 
 enum ToolbarEvent {
   formatting,

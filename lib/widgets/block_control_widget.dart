@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/models/types.dart';
-
-import '../components/overlays/block_option_overlay.dart';
+import 'package:weaver_editor/components/overlays/block_option_overlay.dart';
 
 class BlockControlWidget extends StatelessWidget {
   final int index;

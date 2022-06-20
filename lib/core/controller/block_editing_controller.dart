@@ -7,6 +7,8 @@ import 'package:weaver_editor/models/types.dart';
 import 'editing_compare.dart';
 import 'toolbar_change_delegate.dart';
 
+/// [TextOperationDelegate] is used to perform operations which are determined by [BlockEditingCompare]
+/// [focus] is from [TextBlock] or [HeaderBlock] to control if attach/detach [EditorToolbar] when focus changes
 class BlockEditingController extends TextEditingController
     with ToolbarChangeDelegate, BlockEditingCompare {
   final TextOperationDelegate _delegate;
@@ -77,7 +79,7 @@ class BlockEditingController extends TextEditingController
     // print('delta: ${editingSelection.delta}');
 
     // transform the operation of [BlockEditingStatus] to create/update [FormatNode]
-    final styleMerged = delegate.transform(editingSelection);
+    final styleMerged = delegate.perform(editingSelection);
 
     if (value != newValue || styleMerged) {
       super.value = newValue;

@@ -10,7 +10,7 @@ class EditorPreviewButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
       child: TextButton(
         onPressed: () {
-          EditorController.of(context).startPreview(context);
+          WeaverEditorProvider.of(context).startPreview(context);
         },
         child: const Text(
           'Preview',

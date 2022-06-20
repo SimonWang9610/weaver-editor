@@ -19,6 +19,7 @@ class TextBlockData extends BlockData {
 
   void dispose() {
     headNode?.dispose();
+    headNode = null;
   }
 
   bool adoptAlign(TextAlign value) {

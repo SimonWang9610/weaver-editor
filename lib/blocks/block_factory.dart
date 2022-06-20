@@ -25,6 +25,9 @@ typedef BlockIdGenerator = String Function(int);
 
 String defaultIdGenerator(int length) => nanoid(length);
 
+/// [defaultStyle] from [EditorController] is used to create [TextBlock]
+/// [BlockIdGenerator] will generate the id whose length is [_blockIdLength]
+/// if [generator] is null, defaults to [defaultIdGenerator]
 class BlockFactory {
   static const int defaultBlockIdLength = 5;
   final TextStyle defaultStyle;
@@ -38,6 +41,9 @@ class BlockFactory {
   })  : _blockIdLength = blockIdLength ?? defaultBlockIdLength,
         _generator = generator ?? defaultIdGenerator;
 
+  /// used to restore blocks from the [blocks] map
+  /// the sequence will be the [index] string of [blocks]
+  /// TODO: for EditorJs, the map [blocks] format may different
   List<BlockBase> createBlockFromMetadata(Map<String, dynamic>? blocks) {
     if (blocks == null || blocks.isEmpty) {
       return [];
@@ -52,6 +58,8 @@ class BlockFactory {
     }
   }
 
+  /// create a block by [BlockType] or restore from [map]
+  /// therefore, one of [blockType] and [map] must not be bull
   BlockBase create({
     Map<String, dynamic>? map,
     BlockType? blockType,

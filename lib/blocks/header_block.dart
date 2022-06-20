@@ -21,6 +21,7 @@ class HeaderBlock extends BlockBase<HeaderBlockData> {
           builder: builder ?? defaultHeaderBlockBuilder,
         );
 
+  /// currently, [HeaderBlock] has a specific [TextStyle] and cannot be changed by [EditorToolbar]
   static HeaderBlock create(
     String id, {
     required TextStyle defaultStyle,
@@ -57,6 +58,7 @@ class HeaderBlock extends BlockBase<HeaderBlockData> {
   }
 }
 
+/// Apart from [data] type, [HeaderBlockWidget] also has a different [hintText] compared to [TextBlockWidget]
 class HeaderBlockWidget extends TextBlockWidget<HeaderBlockData> {
   const HeaderBlockWidget({
     Key? key,

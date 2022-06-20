@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'block_creator_button.dart';
 import '../../../models/types.dart';
-import '../../../editor.dart' show EditorController;
+import '../../../editor.dart';
 
 class BlockOptionWidget extends StatelessWidget {
   final OverlayDirection direction;
@@ -42,7 +42,7 @@ class BlockOptionWidget extends StatelessWidget {
           type: BlockType.image,
           child: const Icon(Icons.image),
           beforePressed: () {
-            EditorController.of(globalContext).detachBlock();
+            WeaverEditorProvider.of(globalContext).detachBlock();
             overlayRemoveCallback?.call();
           },
         ),
@@ -52,7 +52,7 @@ class BlockOptionWidget extends StatelessWidget {
           type: BlockType.video,
           child: const Icon(Icons.video_camera_back),
           beforePressed: () {
-            EditorController.of(globalContext).detachBlock();
+            WeaverEditorProvider.of(globalContext).detachBlock();
             overlayRemoveCallback?.call();
           },
         ),
