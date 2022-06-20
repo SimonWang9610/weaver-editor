@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nanoid/nanoid.dart';
 import 'package:weaver_editor/base/block_base.dart';
+import 'package:weaver_editor/blocks/block_factory.dart';
 
 import 'package:weaver_editor/components/animated_block_list.dart';
 import 'package:weaver_editor/components/draggble_block_wrapper.dart';
@@ -139,10 +140,10 @@ class _WeaverEditorState extends State<WeaverEditor> {
   }
 }
 
-class EditorController
-    with BlockManageDelegate, BlockCreationDelegate, EditorScrollDelegate {
+class EditorController with BlockManageDelegate, EditorScrollDelegate {
   final EditorToolbar toolbar;
   final TextStyle defaultStyle;
+  final BlockFactory factory;
   final StreamController<BlockOperationEvent> _notifier =
       StreamController.broadcast();
 
@@ -155,8 +156,13 @@ class EditorController
     required this.defaultStyle,
     required EditorMetadata metadata,
   })  : manager = BlockManager(),
-        data = metadata.copyWith(id: nanoid(36)) {
-    _blocks = data.getBlocks(defaultStyle);
+        factory = BlockFactory(defaultStyle) {
+    if (metadata.id == null) {
+      data = metadata.copyWith(id: nanoid(36));
+    } else {
+      data = metadata;
+    }
+    _blocks = factory.createBlockFromMetadata(data.blocks);
   }
 
   static EditorController of(BuildContext context) {
@@ -213,24 +219,7 @@ class EditorController
     int? pos,
     EmbedData? data,
   }) {
-    late BlockBase block;
-
-    switch (type) {
-      case BlockType.paragraph:
-        block = createParagraphBlock(defaultStyle);
-        break;
-      case BlockType.header:
-        block = createHeaderBlock();
-        break;
-      case BlockType.image:
-        block = createImageBlock(data!);
-        break;
-      case BlockType.video:
-        block = createVideoBlock(data!);
-        break;
-      default:
-        throw UnimplementedError('Unsupported $type block');
-    }
+    final BlockBase block = factory.create(blockType: type, embedData: data);
 
     detachBlock();
 

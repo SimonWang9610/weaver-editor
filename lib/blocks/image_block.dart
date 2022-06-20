@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:weaver_editor/base/block_base.dart';
+import 'package:weaver_editor/models/types.dart';
 import 'data/image_block_data.dart';
 
 Widget defaultImageBlockBuilder(ImageBlockData data) => ImageBlockWidget(
@@ -18,6 +19,40 @@ class ImageBlock extends BlockBase<ImageBlockData> {
           data: data,
           builder: builder ?? defaultImageBlockBuilder,
         );
+
+  static ImageBlock create(
+    String id, {
+    Map<String, dynamic>? map,
+    EmbedData? embedData,
+  }) {
+    assert(map != null || embedData != null);
+
+    String? url;
+    String? path;
+    String? caption;
+
+    if (map == null) {
+      url = embedData?.url;
+      path = embedData?.file?.path;
+      caption = embedData?.caption;
+    } else {
+      if ((map['file'] as String).startsWith('http')) {
+        url = map['file'];
+      } else {
+        path = map['file'];
+      }
+      caption = map['caption'];
+    }
+
+    return ImageBlock(
+      data: ImageBlockData(
+        id: id,
+        imagePath: path,
+        imageUrl: url,
+        caption: caption,
+      ),
+    );
+  }
 }
 
 class ImageBlockWidget extends StatelessBlock<ImageBlockData> {

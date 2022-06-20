@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:weaver_editor/base/block_base.dart';
+import 'package:weaver_editor/models/types.dart';
 import 'data/video_block_data.dart';
 
 Widget defaultVideoBlockBuilder(VideoBlockData data) => VideoBlockWidget(
@@ -19,6 +20,40 @@ class VideoBlock extends BlockBase<VideoBlockData> {
           data: data,
           builder: builder ?? defaultVideoBlockBuilder,
         );
+
+  static VideoBlock create(
+    String id, {
+    Map<String, dynamic>? map,
+    EmbedData? embedData,
+  }) {
+    assert(map != null || embedData != null);
+
+    String? url;
+    String? path;
+    String? caption;
+
+    if (map == null) {
+      url = embedData?.url;
+      path = embedData?.file?.path;
+      caption = embedData?.caption;
+    } else {
+      if ((map['embed'] as String).startsWith('http')) {
+        url = map['embed'];
+      } else {
+        path = map['embed'];
+      }
+      caption = map['caption'];
+    }
+
+    return VideoBlock(
+      data: VideoBlockData(
+        id: id,
+        videoUrl: url,
+        videoPath: path,
+        caption: caption,
+      ),
+    );
+  }
 }
 
 class VideoBlockWidget extends StatefulBlock<VideoBlockData> {

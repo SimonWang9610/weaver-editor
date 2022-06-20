@@ -2,8 +2,11 @@ import 'package:weaver_editor/core/nodes/parsed_node.dart';
 
 class BlockDeserializer with DeserializerHelper {
   static final RegExp reg = RegExp(r"<[^>]*>", multiLine: true);
+  static final _instance = BlockDeserializer._();
 
-  BlockDeserializer();
+  BlockDeserializer._();
+
+  factory BlockDeserializer() => _instance;
 
   /// find all tags by [reg]
   /// use [stack] to record left tags not consumed by its right tag

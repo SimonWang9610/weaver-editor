@@ -4,7 +4,8 @@ import 'package:weaver_editor/editor.dart' show EditorController;
 import 'package:weaver_editor/controller/block_editing_controller.dart';
 import 'package:weaver_editor/core/delegates/text_operation_delegate.dart';
 import 'package:weaver_editor/core/nodes/format_node.dart';
-
+import 'package:weaver_editor/extensions/headerline_ext.dart';
+import 'package:weaver_editor/utils/helper.dart';
 import 'data/text_block_data.dart';
 
 import '../base/block_base.dart';
@@ -23,6 +24,34 @@ class TextBlock<T extends TextBlockData> extends BlockBase<T> {
           data: data,
           builder: builder ?? defaultTextBlockBuilder<T>,
         );
+
+  static TextBlock create(
+    String id, {
+    required TextStyle defaultStyle,
+    Map<String, dynamic>? map,
+  }) {
+    final FormatNode? headNode = map != null
+        ? FormatNode.position(
+            0,
+            0,
+            style: defaultStyle,
+          )
+        : null;
+
+    final String? align = map?['align'];
+
+    final String text = extractText(map?['text'], headNode);
+
+    return TextBlock(
+      data: TextBlockData(
+        style: headNode?.style ?? defaultStyle,
+        id: id,
+        headNode: headNode,
+        text: text,
+        align: align?.toTextAlign() ?? TextAlign.start,
+      ),
+    );
+  }
 }
 
 class TextBlockWidget<T extends TextBlockData> extends StatefulBlock<T> {

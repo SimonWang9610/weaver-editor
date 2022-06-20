@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:weaver_editor/base/block_base.dart';
-
+import 'package:weaver_editor/extensions/headerline_ext.dart';
+import 'package:weaver_editor/utils/helper.dart';
+import 'package:weaver_editor/models/types.dart';
+import 'package:weaver_editor/core/nodes/format_node.dart';
 import 'data/header_block_data.dart';
 import 'text_block.dart';
 
@@ -17,6 +20,41 @@ class HeaderBlock extends BlockBase<HeaderBlockData> {
           data: data,
           builder: builder ?? defaultHeaderBlockBuilder,
         );
+
+  static HeaderBlock create(
+    String id, {
+    required TextStyle defaultStyle,
+    Map<String, dynamic>? map,
+  }) {
+    final String? align = map?['alignment'];
+    final num? level = map?['level'];
+
+    final TextStyle style = TextStyle(
+      color: Colors.black,
+      fontWeight: FontWeight.bold,
+      fontSize: level?.levelHeaderLine().size ?? HeaderLine.level1.size,
+    );
+
+    final FormatNode? headNode = map != null
+        ? FormatNode.position(
+            0,
+            0,
+            style: style,
+          )
+        : null;
+
+    final String text = extractText(map?['text'], headNode);
+
+    return HeaderBlock(
+      data: HeaderBlockData(
+        id: id,
+        text: text,
+        align: align?.toTextAlign() ?? TextAlign.center,
+        style: style,
+        headNode: headNode,
+      ),
+    );
+  }
 }
 
 class HeaderBlockWidget extends TextBlockWidget<HeaderBlockData> {
