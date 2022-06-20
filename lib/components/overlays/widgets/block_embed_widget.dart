@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import '../components/outlined_text_button.dart';
-import '../models/types.dart';
+import 'package:weaver_editor/components/outlined_text_button.dart';
+import 'package:weaver_editor/models/types.dart';
 
 class BlockEmbedWidget extends StatefulWidget {
   final int index;

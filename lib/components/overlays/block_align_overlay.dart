@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../editor.dart' show EditorController;
+import '../../editor.dart';
 
 class BlockAlignOverlay extends StatelessWidget {
   const BlockAlignOverlay({Key? key}) : super(key: key);
@@ -12,7 +12,7 @@ class BlockAlignOverlay extends StatelessWidget {
       link: link,
       child: IconButton(
         onPressed: () {
-          final manager = EditorController.of(context).manager;
+          final manager = WeaverEditorProvider.of(context).manager;
 
           final overlay = manager.createAlignOverlay(context, link: link);
 

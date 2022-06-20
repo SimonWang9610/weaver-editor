@@ -18,7 +18,7 @@ class BlockDraggableButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final feedback =
-        EditorController.of(globalContext ?? context).getBlockById(blockId);
+        WeaverEditorProvider.of(globalContext ?? context).getBlockById(blockId);
 
     // final feedbackSize =
     //     (feedback.element.findRenderObject() as RenderBox).size;

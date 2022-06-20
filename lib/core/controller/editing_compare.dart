@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/editing_selection.dart';
-import '../models/types.dart';
+import 'package:weaver_editor/models/editing_selection.dart';
+import 'package:weaver_editor/models/types.dart';
 
 mixin BlockEditingCompare on TextEditingController {
   BlockEditingSelection compare(TextEditingValue newValue) {

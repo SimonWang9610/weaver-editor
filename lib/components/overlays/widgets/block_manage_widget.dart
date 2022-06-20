@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../editor.dart' show EditorController;
-import '../../outlined_text_button.dart';
-import '../../block_draggable_button.dart';
+import 'package:weaver_editor/editor.dart';
+import 'package:weaver_editor/components/outlined_text_button.dart';
+import 'package:weaver_editor/components/block_draggable_button.dart';
 
 class BlockManageWidget extends StatelessWidget {
   final BuildContext globalContext;
@@ -16,7 +16,7 @@ class BlockManageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final editorController = EditorController.of(globalContext);
+    final editorController = WeaverEditorProvider.of(globalContext);
 
     final canMoveUp = editorController.canMoveUp(index);
     final canMoveDown = editorController.canMoveDown(index);

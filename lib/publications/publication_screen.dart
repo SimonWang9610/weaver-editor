@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:weaver_editor/models/editor_metadata.dart';
 import 'package:weaver_editor/publications/local_publication_list.dart';
 
-import '../editor.dart';
-import '../toolbar/editor_toolbar.dart';
+import 'package:weaver_editor/editor.dart';
 
 class PublicationScreen extends StatefulWidget {
   const PublicationScreen({Key? key}) : super(key: key);
@@ -86,7 +85,6 @@ class _PublicationScreenState extends State<PublicationScreen> {
       MaterialPageRoute(
         builder: (_) => WeaverEditor(
           metadata: EditorMetadata(title: title),
-          toolbar: EditorToolbar(style),
           defaultStyle: style,
         ),
       ),

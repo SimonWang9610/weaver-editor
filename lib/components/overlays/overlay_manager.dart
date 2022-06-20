@@ -97,7 +97,7 @@ class BlockManager extends TickerProvider {
       removeOverlay();
     }
 
-    final toolbar = EditorController.of(context).toolbar;
+    final toolbar = WeaverEditorProvider.of(context).toolbar;
 
     _createOverlay(
       BlockAlignWidget(
@@ -176,6 +176,6 @@ class BlockManager extends TickerProvider {
   }
 
   void unfocus(BuildContext context) {
-    EditorController.of(context).detachBlock();
+    WeaverEditorProvider.of(context).detachBlock();
   }
 }

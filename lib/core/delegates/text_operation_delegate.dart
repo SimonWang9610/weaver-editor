@@ -13,17 +13,20 @@ class TextOperationDelegate<T extends TextBlockData>
   TextOperationDelegate(T data) : super(data: data);
 }
 
+/// [TextOperationMixin] exposes all methods used by [BlockEditingController]
 mixin TextOperationMixin<T extends TextBlockData> on OperationDelegate<T> {
   void mergeStyle() {
     headNode.synchronize(headNode.style);
   }
 
+  /// build [TextSpan] from [headNode]
   TextSpan build(String content) {
     data.text = content;
     return headNode.build(content);
   }
 
-  bool transform(BlockEditingSelection selection) {
+  /// perform operations according to [BlockEditingSelection.status]
+  bool perform(BlockEditingSelection selection) {
     if (!hasAttachedToolbar) return false;
 
     final pair = findNodesBySelection(selection);
@@ -97,6 +100,7 @@ mixin TextOperationMixin<T extends TextBlockData> on OperationDelegate<T> {
   }
 }
 
+/// implements all logics shared by different operations
 class OperationDelegate<T extends TextBlockData> with ToolbarBridge {
   final T data;
 
@@ -111,7 +115,6 @@ class OperationDelegate<T extends TextBlockData> with ToolbarBridge {
 
   void dispose() {
     detach();
-    headNode.dispose();
     data.dispose();
   }
 
@@ -310,7 +313,10 @@ mixin ToolbarBridge {
     attachedToolbar?.synchronize(style);
   }
 
-  void detach() => attachedToolbar = null;
+  void detach() {
+    attachedToolbar?.detach();
+    attachedToolbar = null;
+  }
 
   TextStyle get effectiveStyle => attachedToolbar!.style;
 }

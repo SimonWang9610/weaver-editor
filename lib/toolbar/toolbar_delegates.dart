@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:weaver_editor/controller/block_editing_controller.dart';
+import 'package:weaver_editor/core/controller/block_editing_controller.dart';
 import 'package:weaver_editor/toolbar/editor_toolbar.dart';
 import 'package:weaver_editor/toolbar/widgets/add_link_button.dart';
-import '../models/types.dart';
+import 'package:weaver_editor/models/types.dart';
 
 mixin ToolbarStyleDelegate {
   StreamController<ToolbarEvent> get notifier;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:weaver_editor/blocks/video_block.dart';
 import '../../base/block_data.dart';
 
+/// TODO: [createPreview] should display the video thumbnail instead of [VideoBlockWidget]
 class VideoBlockData extends BlockData {
   final String? videoUrl;
   final String? videoPath;

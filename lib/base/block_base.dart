@@ -60,7 +60,7 @@ mixin BlockRenderObjectObserver<T extends BlockData> {
       final box = context.findRenderObject() as RenderBox?;
       final bottomLeft = box?.paintBounds.bottomLeft;
       final offset = box?.localToGlobal(bottomLeft ?? Offset.zero);
-      print('set render object offset: $offset');
+      // print('set render object offset: $offset');
       data.updateBlockSize(newSize: box?.size, offset: offset);
     });
   }

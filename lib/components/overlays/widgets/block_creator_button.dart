@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../outlined_text_button.dart';
-import '../../../models/types.dart';
-import '../../../editor.dart' show EditorController;
-import '../../../widgets/block_embed_widget.dart';
+import 'package:weaver_editor/editor.dart';
+import 'package:weaver_editor/components/outlined_text_button.dart';
+import 'package:weaver_editor/models/types.dart';
+import 'block_embed_widget.dart';
 
 class BlockCreatorButton extends StatelessWidget {
   final BuildContext? globalContext;
@@ -30,7 +30,7 @@ class BlockCreatorButton extends StatelessWidget {
           case BlockType.paragraph:
           case BlockType.header:
             final editorController =
-                EditorController.of(globalContext ?? context);
+                WeaverEditorProvider.of(globalContext ?? context);
 
             editorController.insertBlock(type, pos: index);
             break;
@@ -55,7 +55,8 @@ class BlockCreatorButton extends StatelessWidget {
     );
 
     if (data != null && data.isValid) {
-      final editorController = EditorController.of(globalContext ?? context);
+      final editorController =
+          WeaverEditorProvider.of(globalContext ?? context);
       editorController.insertBlock(type, data: data, pos: index);
     }
   }

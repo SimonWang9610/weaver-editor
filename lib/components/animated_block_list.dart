@@ -119,7 +119,7 @@ class AnimatedBlockListState extends State<AnimatedBlockList>
     if (key is ValueKey<String>) {
       final id = key.value;
 
-      final index = EditorController.of(context).getBlockIndex(id);
+      final index = WeaverEditorProvider.of(context).getBlockIndex(id);
       final effectiveIndex = _itemIndexEven ? index * 2 : index * 2 + 1;
       return index > -1 ? effectiveIndex : null;
     }

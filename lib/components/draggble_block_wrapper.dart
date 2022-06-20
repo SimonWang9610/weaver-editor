@@ -12,17 +12,17 @@ class DragTargetWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return DragTarget<String>(
       builder: (_, __, ___) {
-        final block = EditorController.of(context).getBlockByIndex(index);
+        final block = WeaverEditorProvider.of(context).getBlockByIndex(index);
         return block.build();
       },
       onAcceptWithDetails: (details) {
-        final blockId = EditorController.of(context).getBlockId(index);
+        final blockId = WeaverEditorProvider.of(context).getBlockId(index);
 
         // final box = context.findRenderObject() as RenderBox;
 
         // final contains = box.paintBounds.contains(details.offset);
         if (details.data != blockId) {
-          EditorController.of(context).moveBlockTo(details.data, index);
+          WeaverEditorProvider.of(context).moveBlockTo(details.data, index);
         }
       },
     );

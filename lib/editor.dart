@@ -1,32 +1,18 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:nanoid/nanoid.dart';
-import 'package:weaver_editor/base/block_base.dart';
-
-import 'package:weaver_editor/components/animated_block_list.dart';
-import 'package:weaver_editor/components/draggble_block_wrapper.dart';
-import 'package:weaver_editor/toolbar/editor_toolbar.dart';
-import 'package:weaver_editor/core/delegates/delegates.dart';
-import 'package:weaver_editor/components/overlays/overlay_manager.dart';
+import 'package:weaver_editor/core/editor_controller.dart';
 import 'package:weaver_editor/models/editor_metadata.dart';
-import 'package:weaver_editor/screens/preview.dart';
-import 'package:weaver_editor/widgets/editor_appbar.dart';
-
-import 'toolbar/widgets/toolbar_widget.dart';
-import 'controller/block_editing_controller.dart';
-import 'models/types.dart';
-import 'widgets/block_control_widget.dart';
+import 'package:weaver_editor/toolbar/editor_toolbar.dart';
+import 'package:weaver_editor/widgets/editor_widget.dart';
 
 class WeaverEditor extends StatefulWidget {
   final EditorMetadata metadata;
-  final EditorToolbar toolbar;
   final TextStyle defaultStyle;
+  final Widget? child;
   const WeaverEditor({
     Key? key,
-    required this.toolbar,
     required this.defaultStyle,
     required this.metadata,
+    this.child,
   }) : super(key: key);
 
   @override
@@ -34,217 +20,75 @@ class WeaverEditor extends StatefulWidget {
 }
 
 class _WeaverEditorState extends State<WeaverEditor> {
+  late final EditorToolbar toolbar;
+  late final WeaverEditorProvider provider;
+
   late final EditorController controller;
-  late final StreamSubscription<BlockOperationEvent> _sub;
-  final ScrollController _scrollController = ScrollController();
-  final GlobalKey<AnimatedBlockListState> _listKey =
-      GlobalKey<AnimatedBlockListState>();
 
   @override
   void initState() {
     super.initState();
+    toolbar = EditorToolbar(widget.defaultStyle);
+
     controller = EditorController(
-      widget.toolbar,
-      metadata: widget.metadata,
+      toolbar,
       defaultStyle: widget.defaultStyle,
+      metadata: widget.metadata,
     );
-
-    _sub = controller.listen(_handleBlockChange);
-  }
-
-  void _handleBlockChange(BlockOperationEvent event) {
-    _listKey.currentState?.animateTo(event.index, event.operation);
-
-    controller.scrollToIndexIfNeeded(_scrollController, event.index);
   }
 
   @override
   void dispose() {
-    widget.toolbar.dispose();
-    _scrollController.dispose();
-    _sub.cancel();
+    toolbar.dispose();
     controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    print('create editor: title: ${widget.metadata.title}');
-
-    return WillPopScope(
-      child: GestureDetector(
-        child: Scaffold(
-          appBar: EditorAppBar(
-            title: Text(
-              widget.metadata.title,
-              style: const TextStyle(
-                color: Colors.black,
-              ),
-            ),
-            leading: IconButton(
-              onPressed: () => Navigator.of(context).maybePop(),
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 20,
-                horizontal: 10,
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: AnimatedBlockList(
-                      key: _listKey,
-                      scrollController: _scrollController,
-                      initItemCount: controller.blocks.length,
-                      separatedBuilder: (_, index) => BlockControlWidget(
-                        index: index,
-                      ),
-                      itemBuilder: (_, index, animation) {
-                        final block = controller.getBlockByIndex(index);
-
-                        return FadeTransition(
-                          key: ValueKey(block.id),
-                          opacity: animation,
-                          child: DragTargetWrapper(
-                            index: index,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  EditorToolbarWidget(
-                    toolbar: controller.toolbar,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        onTap: () {
-          controller.manager.removeOverlay(
-            playReverseAnimation: true,
-          );
-        },
-      ),
-      onWillPop: () async {
-        return true;
-      },
+    return WeaverEditorProvider(
+      controller: controller,
+      child: widget.child ?? const EditorWidget(),
     );
   }
 }
 
-class EditorController
-    with BlockManageDelegate, BlockCreationDelegate, EditorScrollDelegate {
-  final EditorToolbar toolbar;
-  final TextStyle defaultStyle;
-  final StreamController<BlockOperationEvent> _notifier =
-      StreamController.broadcast();
+class WeaverEditorProvider extends InheritedWidget {
+  final EditorController controller;
+  const WeaverEditorProvider({
+    Key? key,
+    required this.controller,
+    Widget child = const EditorWidget(),
+  }) : super(key: key, child: child);
 
-  final BlockManager manager;
-  late final List<BlockBase> _blocks;
-  late final EditorMetadata data;
+  @override
+  bool updateShouldNotify(covariant WeaverEditorProvider oldWidget) {
+    return !identical(controller, oldWidget.controller);
 
-  EditorController(
-    this.toolbar, {
-    required this.defaultStyle,
-    required EditorMetadata metadata,
-  })  : manager = BlockManager(),
-        data = metadata.copyWith(id: nanoid(36)) {
-    _blocks = data.getBlocks(defaultStyle);
+    // if (!identical(controller.blocks, oldWidget.controller.blocks)) return true;
+
+    // if (controller.blocks.length != oldWidget.controller.blocks.length) {
+    //   return true;
+    // }
+
+    // for (int i = 0; i < controller.blocks.length; i++) {
+    //   final block = controller.blocks[i];
+    //   final oldBlock = oldWidget.controller.blocks[i];
+
+    //   if (block.id != oldBlock.id) return true;
+    // }
+    // return false;
   }
 
-  static EditorController of(BuildContext context) {
-    final editor = context.findAncestorStateOfType<_WeaverEditorState>();
+  static EditorController of(BuildContext context, {bool listen = false}) {
+    final WeaverEditorProvider? editor = listen
+        ? context.dependOnInheritedWidgetOfExactType<WeaverEditorProvider>()
+        : context.findAncestorWidgetOfExactType<WeaverEditorProvider>();
 
     if (editor == null) {
-      throw ErrorDescription('No Editor Found');
+      throw ErrorDescription(
+          'BuildContext does not has a root of [WeaverEditorProvider]');
     }
-
     return editor.controller;
-  }
-
-  @override
-  List<BlockBase> get blocks => _blocks;
-
-  @override
-  StreamController get notifier => _notifier;
-
-  void dispose() {
-    detachBlock();
-    manager.dispose();
-    _notifier.close();
-  }
-
-  StreamSubscription<BlockOperationEvent> listen(
-      void Function(BlockOperationEvent event) handler) {
-    return _notifier.stream.listen(handler);
-  }
-
-  void startPreview(BuildContext context) {
-    if (_blocks.isEmpty) return;
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlockPreview(
-          id: data.id!,
-          title: data.title,
-          blocks: _blocks,
-        ),
-      ),
-    );
-  }
-
-  EditorToolbar attachBlock(BlockEditingController controller) {
-    return toolbar.attach(controller);
-  }
-
-  void detachBlock() {
-    toolbar.detach();
-  }
-
-  void insertBlock(
-    BlockType type, {
-    int? pos,
-    EmbedData? data,
-  }) {
-    late BlockBase block;
-
-    switch (type) {
-      case BlockType.paragraph:
-        block = createParagraphBlock(defaultStyle);
-        break;
-      case BlockType.header:
-        block = createHeaderBlock();
-        break;
-      case BlockType.image:
-        block = createImageBlock(data!);
-        break;
-      case BlockType.video:
-        block = createVideoBlock(data!);
-        break;
-      default:
-        throw UnimplementedError('Unsupported $type block');
-    }
-
-    detachBlock();
-
-    if (pos != null && pos >= 0) {
-      blocks.insert(pos, block);
-    } else {
-      blocks.add(block);
-    }
-
-    notifier.add(
-      BlockOperationEvent(
-        BlockOperation.insert,
-        index: pos ?? blocks.length - 1,
-      ),
-    );
   }
 }
