@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:weaver_editor/core/editor_controller.dart';
 import 'package:weaver_editor/models/types.dart';
 import 'package:weaver_editor/components/animated_block_list.dart';
-import 'package:weaver_editor/components/draggble_block_wrapper.dart';
 import 'package:weaver_editor/widgets/editor_appbar.dart';
 import 'package:weaver_editor/toolbar/widgets/toolbar_widget.dart';
 import 'block_control_widget.dart';
@@ -26,11 +25,6 @@ class _EditorWidgetState extends State<EditorWidget> {
       GlobalKey<AnimatedBlockListState>();
 
   late StreamSubscription<BlockOperationEvent> _sub;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void didChangeDependencies() {
@@ -61,12 +55,7 @@ class _EditorWidgetState extends State<EditorWidget> {
       child: GestureDetector(
         child: Scaffold(
           appBar: EditorAppBar(
-            title: Text(
-              controller.data.title,
-              style: const TextStyle(
-                color: Colors.black,
-              ),
-            ),
+            title: controller.data.title,
             leading: IconButton(
               onPressed: () => Navigator.of(context).maybePop(),
               icon: const Icon(
@@ -91,17 +80,7 @@ class _EditorWidgetState extends State<EditorWidget> {
                       separatedBuilder: (_, index) => BlockControlWidget(
                         index: index,
                       ),
-                      itemBuilder: (_, index, animation) {
-                        final block = controller.getBlockByIndex(index);
-
-                        return FadeTransition(
-                          key: ValueKey(block.id),
-                          opacity: animation,
-                          child: DragTargetWrapper(
-                            index: index,
-                          ),
-                        );
-                      },
+                      itemBuilder: controller.buildBlock,
                     ),
                   ),
                   EditorToolbarWidget(

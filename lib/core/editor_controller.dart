@@ -11,7 +11,9 @@ import 'package:weaver_editor/core/controller/block_editing_controller.dart';
 import 'package:weaver_editor/components/overlays/overlay_manager.dart';
 import 'package:weaver_editor/models/editor_metadata.dart';
 import 'package:weaver_editor/models/types.dart';
+
 import 'package:weaver_editor/screens/preview.dart';
+import 'package:weaver_editor/components/draggble_block_wrapper.dart';
 
 class EditorController with BlockManageDelegate, EditorScrollDelegate {
   final EditorToolbar toolbar;
@@ -55,20 +57,6 @@ class EditorController with BlockManageDelegate, EditorScrollDelegate {
     return _notifier.stream.listen(handler);
   }
 
-  void startPreview(BuildContext context) {
-    if (_blocks.isEmpty) return;
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlockPreview(
-          id: data.id!,
-          title: data.title,
-          blocks: _blocks,
-        ),
-      ),
-    );
-  }
-
   EditorToolbar attachBlock(BlockEditingController controller) {
     return toolbar.attach(controller);
   }
@@ -96,6 +84,31 @@ class EditorController with BlockManageDelegate, EditorScrollDelegate {
       BlockOperationEvent(
         BlockOperation.insert,
         index: pos ?? blocks.length - 1,
+      ),
+    );
+  }
+
+  void startPreview(BuildContext context) {
+    if (_blocks.isEmpty) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlockPreview(
+          id: data.id!,
+          title: data.title,
+          blocks: _blocks,
+        ),
+      ),
+    );
+  }
+
+  Widget buildBlock(
+      BuildContext context, int index, Animation<double> animation) {
+    return FadeTransition(
+      key: ValueKey(blocks[index]),
+      opacity: animation,
+      child: DragTargetWrapper(
+        index: index,
       ),
     );
   }
