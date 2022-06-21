@@ -16,15 +16,24 @@ class DragTargetWrapper extends StatelessWidget {
         return block.build();
       },
       onAcceptWithDetails: (details) {
-        final blockId = WeaverEditorProvider.of(context).getBlockId(index);
-
-        // final box = context.findRenderObject() as RenderBox;
-
-        // final contains = box.paintBounds.contains(details.offset);
-        if (details.data != blockId) {
-          WeaverEditorProvider.of(context).moveBlockTo(details.data, index);
-        }
+        _accept(context, details);
+      },
+      onMove: (details) {
+        _accept(context, details);
       },
     );
+  }
+
+  void _accept(BuildContext context, DragTargetDetails<String> details) {
+    final blockId = WeaverEditorProvider.of(context).getBlockId(index);
+
+    // final box = context.findRenderObject() as RenderBox;
+
+    // final localPoint = box.globalToLocal(details.offset);
+
+    // final contains = box.paintBounds.contains(localPoint);
+    if (details.data != blockId) {
+      WeaverEditorProvider.of(context).moveBlockTo(details.data, index);
+    }
   }
 }

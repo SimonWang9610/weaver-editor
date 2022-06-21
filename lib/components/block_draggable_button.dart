@@ -7,36 +7,55 @@ class BlockDraggableButton extends StatelessWidget {
   final Widget child;
   final VoidCallback? onDragStart;
   final BuildContext? globalContext;
+  final double size;
   const BlockDraggableButton({
     Key? key,
     required this.child,
     required this.blockId,
     this.globalContext,
     this.onDragStart,
+    this.size = 100,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final feedback =
-        WeaverEditorProvider.of(globalContext ?? context).getBlockById(blockId);
-
-    // final feedbackSize =
-    //     (feedback.element.findRenderObject() as RenderBox).size;
-
     return Draggable<String>(
       data: blockId,
       child: child,
-      feedback: feedback.preview,
+      feedback: _buildFeedback(),
       onDragStarted: onDragStart,
-      dragAnchor: DragAnchor.pointer,
-      // dragAnchorStrategy: (draggable, __, position) {
-      //   // print('feedback size: $feedbackSize');
-      //   // print('position: $position');
-      //   // final horizontalShift = position.dx - feedbackSize.width;
-      //   // return draggable.feedbackOffset +
-      //   //     Offset(horizontalShift > 0 ? horizontalShift : 0, position.dy);
-      //   return Offset(-feedbackSize.width, 0);
-      // },
+      dragAnchorStrategy: _customDragStrategy,
+    );
+  }
+
+  Offset _customDragStrategy(
+      Draggable draggable, BuildContext context, Offset position) {
+    final block = WeaverEditorProvider.of(globalContext!).getBlockById(blockId);
+
+    final width = block.size?.width ?? size;
+    final height = block.size?.height ?? size;
+
+    final box = context.findRenderObject() as RenderBox;
+    final pointer = box.globalToLocal(position);
+    return pointer.translate(width / 2, height / 2);
+  }
+
+  Widget _buildFeedback() {
+    final block = WeaverEditorProvider.of(globalContext!).getBlockById(blockId);
+
+    final width = block.size?.width ?? size;
+    final height = block.size?.height ?? size;
+
+    return Container(
+      width: width,
+      height: height,
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        color: Colors.grey,
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(),
+      ),
+      child: block.preview,
     );
   }
 }
