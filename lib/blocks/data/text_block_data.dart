@@ -18,8 +18,9 @@ class TextBlockData extends BlockData {
   }) : super(id: id, type: type);
 
   void dispose() {
+    print('disposing text block data');
     headNode?.dispose();
-    headNode = null;
+    //! headNode = null;
   }
 
   bool adoptAlign(TextAlign value) {

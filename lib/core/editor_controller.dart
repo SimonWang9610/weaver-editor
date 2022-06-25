@@ -105,7 +105,7 @@ class EditorController with BlockManageDelegate, EditorScrollDelegate {
   Widget buildBlock(
       BuildContext context, int index, Animation<double> animation) {
     return FadeTransition(
-      key: ValueKey(blocks[index]),
+      key: ValueKey(blocks[index].id),
       opacity: animation,
       child: DragTargetWrapper(
         index: index,
