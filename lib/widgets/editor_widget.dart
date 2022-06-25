@@ -30,6 +30,7 @@ class _EditorWidgetState extends State<EditorWidget> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // ! before initState is completed, we cannot find the [WeaverEditorProvider]
+    // ! because we cannot depends on [WeaverEditorProvider] before change dependencies
     controller = WeaverEditorProvider.of(context, listen: true);
     _sub = controller.listen(_handleBlockChange);
   }
