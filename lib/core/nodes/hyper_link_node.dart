@@ -49,7 +49,7 @@ class HyperLinkNode extends FormatNode {
   }) {
     final caption = content.characters.getRange(range.start, range.end).string;
 
-    print('build hyper link node: $url');
+    print('build hyper link node: $url, range: $range');
 
     // ! must create recognizer after the first build is completed
     // ! otherwise, it will throw recognizer lateInitializationError
@@ -68,11 +68,14 @@ class HyperLinkNode extends FormatNode {
       // recognizer?.dispose();
       // recognizer = null;
 
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) {
-          recognizer ??= TapGestureRecognizer()..onTap = _handleTap;
-        },
-      );
+      // WidgetsBinding.instance.addPostFrameCallback(
+      //   (_) {
+      //     recognizer ??= TapGestureRecognizer()..onTap = _handleTap;
+      //   },
+      // );
+      // ! in edit mode, recognizer may throw exception when scrolling out of this node
+      recognizer?.dispose();
+      recognizer = null;
     }
 
     final chainedSpan = next?.build(content);
@@ -103,5 +106,10 @@ class HyperLinkNode extends FormatNode {
 
   void _handleTap() {
     print('double tapped on Hyperlink: $url');
+  }
+
+  @override
+  String toString() {
+    return 'HyperNode: ${super.toString()}';
   }
 }

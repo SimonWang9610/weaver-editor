@@ -53,6 +53,8 @@ class NodePair {
   bool get onSameLinkNode =>
       head is HyperLinkNode && trail is HyperLinkNode && head == trail;
 
+  bool get isEqual => head == trail;
+
   @override
   String toString() {
     return '${head.range} <--> ${trail.range}';

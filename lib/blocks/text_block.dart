@@ -119,7 +119,7 @@ class TextBlockState<T extends TextBlockData>
 
   @override
   Widget build(BuildContext context) {
-    print('build text block: ${widget.key}');
+    // print('build text block: ${widget.key}');
 
     super.build(context);
 
