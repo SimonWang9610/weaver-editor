@@ -83,16 +83,26 @@ class ImageBlockWidget extends StatelessBlock<ImageBlockData> {
             errorBuilder: (_, __, ___) => errorWidget,
           );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        SizedBox.square(
-          dimension: width,
-          child: image,
-        ),
-        if (data.caption != null) Text(data.caption!),
-      ],
+    // return Column(
+    //   crossAxisAlignment: CrossAxisAlignment.center,
+    //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+    //   children: [
+    //     SizedBox.square(
+    //       dimension: width,
+    //       child: image,
+    //     ),
+    //     if (data.caption != null) Text(data.caption!),
+    //   ],
+    // );
+    // ! careful to use Flex widgets in SliverList
+    // !
+    return Container(
+      constraints: BoxConstraints.tightFor(
+        width: width,
+        height: width,
+      ),
+      alignment: Alignment.center,
+      child: image,
     );
   }
 
