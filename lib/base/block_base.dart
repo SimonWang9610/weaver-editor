@@ -22,6 +22,10 @@ abstract class BlockBase<T extends BlockData> {
     // print('build block[$id]');
     return builder(data);
   }
+
+  void dispose() {
+    data.dispose();
+  }
 }
 
 abstract class StatelessBlock<T extends BlockData> extends StatelessWidget

@@ -11,6 +11,8 @@ abstract class BlockData {
   Widget createPreview();
   Map<String, dynamic> toMap();
 
+  void dispose() {}
+
   void updateBlockSize({Size? newSize, Offset? offset}) {
     size = newSize;
     offset = offset;

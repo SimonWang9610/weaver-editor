@@ -46,10 +46,17 @@ class EditorController with BlockManageDelegate, EditorScrollDelegate {
   @override
   StreamController get notifier => _notifier;
 
+  /// the lifetime of [BlockBase] should be same as [EditorController], instead of handing it out to its block widgets
+  /// when disposing [BlockBase], its [BlockData] will also be disposed
+  /// otherwise [StatefulBlock] cannot re-construct [FormatNode] correctly when rebuilding its block widgets after being disposed during list scrolling
   void dispose() {
     detachBlock();
     _notifier.close();
     manager.dispose();
+
+    for (final block in blocks) {
+      block.dispose();
+    }
   }
 
   StreamSubscription<BlockOperationEvent> listen(

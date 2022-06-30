@@ -118,7 +118,7 @@ class OperationDelegate<T extends TextBlockData> with ToolbarBridge {
 
   void dispose() {
     detach();
-    data.dispose();
+    // data.dispose();
   }
 
   void performOperation(
