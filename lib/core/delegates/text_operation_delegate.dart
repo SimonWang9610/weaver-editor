@@ -85,10 +85,13 @@ mixin TextOperationMixin<T extends TextBlockData> on OperationDelegate<T> {
   void deleteBySelection(BlockEditingSelection selection, NodePair pair) {
     assert(selection.latest.isCollapsed);
 
-    performOperation(
-      selection,
-      pair,
-    );
+    // avoid delete bug
+    if (!pair.trail.isInitNode) {
+      performOperation(
+        selection,
+        pair,
+      );
+    }
   }
 
   void insertBySelection(BlockEditingSelection selection, NodePair pair) {
@@ -115,7 +118,7 @@ class OperationDelegate<T extends TextBlockData> with ToolbarBridge {
 
   void dispose() {
     detach();
-    data.dispose();
+    // data.dispose();
   }
 
   void performOperation(
@@ -218,7 +221,7 @@ class OperationDelegate<T extends TextBlockData> with ToolbarBridge {
 
     final chained = FormatNode.chain(splitNodes);
 
-    // print('chained split nodes: $chained');
+    print('chained split nodes: $chained');
 
     if (next != null) {
       // ! next will base on the old previous node
@@ -226,12 +229,13 @@ class OperationDelegate<T extends TextBlockData> with ToolbarBridge {
       next.translateBase(chained.trail.range.end);
       chained.trail.chainNext(next);
     }
+    // print('chained: $chained');
 
     if (chained.head.canAsHeadNode || previous == null) {
       headNode.unlink();
-      headNode = chained.head;
+      headNode = chained.isEqual ? chained.trail : chained.head;
     } else {
-      previous.chainNext(chained.head);
+      previous.chainNext(chained.isEqual ? chained.trail : chained.head);
     }
 
     if (headNode is HyperLinkNode && headNode.isInitNode) {
@@ -246,7 +250,7 @@ class OperationDelegate<T extends TextBlockData> with ToolbarBridge {
       headNode = formatNode;
     }
 
-    // print('headNode: $headNode');
+    print('headNode: $headNode');
   }
 
   FormatNode? createMiddleNode(
@@ -304,6 +308,12 @@ mixin ToolbarBridge {
 
   bool get toolbarSynchronized =>
       hasAttachedToolbar && attachedToolbar!.synchronized;
+
+  void insertLink(String externalUrl) {
+    print('set hyper link data: $externalUrl');
+    final data = HyperLinkData(externalUrl, caption: externalUrl);
+    attachedToolbar?.linkData = data;
+  }
 
   void performTaskAfterAttached() {
     attachedToolbar?.executeTaskAfterAttached();

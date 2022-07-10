@@ -52,8 +52,8 @@ class NodeRange {
   }
 
   bool canChain(NodeRange other) => end == other.start;
-  bool canMerge(NodeRange previous) {
-    return previous.end == start && start == end;
+  bool canMerge(NodeRange next) {
+    return next.start == end && next.start == next.end;
   }
 
   int get interval => end - start;

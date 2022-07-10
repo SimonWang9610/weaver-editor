@@ -17,10 +17,15 @@ class TextBlockData extends BlockData {
     this.align = TextAlign.start,
   }) : super(id: id, type: type);
 
+  @override
   void dispose() {
+    print('disposing text block data');
     headNode?.dispose();
-    headNode = null;
+    //! headNode = null;
   }
+
+  @override
+  bool get isNotEmpty => headNode?.isNotEmpty ?? false;
 
   bool adoptAlign(TextAlign value) {
     if (align != value) {

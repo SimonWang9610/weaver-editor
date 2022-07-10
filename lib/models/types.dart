@@ -22,6 +22,7 @@ enum BlockOperation {
   insert,
   remove,
   reorder,
+  replace,
 }
 
 enum OverlayDirection {
@@ -78,5 +79,44 @@ class EmbedData {
       }
     }
     return false;
+  }
+}
+
+class ClipboardUrl {
+  final String? imageUrl;
+  final String? youtubeUrl;
+  final String? externalUrl;
+
+  ClipboardUrl({
+    this.imageUrl,
+    this.youtubeUrl,
+    this.externalUrl,
+  });
+
+  factory ClipboardUrl.empty() => ClipboardUrl();
+
+  bool get hasValidUrl =>
+      imageUrl != null || youtubeUrl != null || externalUrl != null;
+
+  EmbedData? asEmbedData() {
+    if (hasValidUrl) {
+      return EmbedData(url: youtubeUrl ?? imageUrl);
+    }
+    return null;
+  }
+
+  BlockType get type {
+    assert(hasValidUrl,
+        'Cannot determine which [BlockType] should be because no valid remote URL was provided.');
+    if (youtubeUrl != null) {
+      return BlockType.video;
+    } else {
+      return BlockType.image;
+    }
+  }
+
+  @override
+  String toString() {
+    return 'ClipboardUrl(image: $imageUrl, youtube: $youtubeUrl, external: $externalUrl)';
   }
 }

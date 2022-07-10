@@ -10,6 +10,9 @@ abstract class BlockData {
 
   Widget createPreview();
   Map<String, dynamic> toMap();
+  bool get isNotEmpty => true;
+
+  void dispose() {}
 
   void updateBlockSize({Size? newSize, Offset? offset}) {
     size = newSize;

@@ -44,7 +44,7 @@ class HeaderBlock extends BlockBase<HeaderBlockData> {
           )
         : null;
 
-    final String text = extractText(map?['text'], headNode);
+    final String text = StringUtil.extractText(map?['text'], headNode);
 
     return HeaderBlock(
       data: HeaderBlockData(
