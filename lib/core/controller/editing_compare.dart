@@ -7,10 +7,10 @@ mixin BlockEditingCompare on TextEditingController {
     final textOffset =
         newValue.text.characters.length - value.text.characters.length;
 
-    final selectionOffset = newValue.selection - value.selection;
+    // final selectionOffset = newValue.selection - value.selection;
 
     late final BlockEditingStatus status;
-    if (textOffset > 0 && selectionOffset.isCollapsed) {
+    if (textOffset > 0) {
       status = BlockEditingStatus.insert;
     } else if (textOffset < 0) {
       status = BlockEditingStatus.delete;

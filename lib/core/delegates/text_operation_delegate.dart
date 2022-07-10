@@ -309,6 +309,12 @@ mixin ToolbarBridge {
   bool get toolbarSynchronized =>
       hasAttachedToolbar && attachedToolbar!.synchronized;
 
+  void insertLink(String externalUrl) {
+    print('set hyper link data: $externalUrl');
+    final data = HyperLinkData(externalUrl, caption: externalUrl);
+    attachedToolbar?.linkData = data;
+  }
+
   void performTaskAfterAttached() {
     attachedToolbar?.executeTaskAfterAttached();
   }

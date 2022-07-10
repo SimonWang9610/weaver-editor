@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nanoid/nanoid.dart';
 import 'package:weaver_editor/base/block_base.dart';
 import 'package:weaver_editor/blocks/block_factory.dart';
+import 'package:weaver_editor/blocks/blocks.dart';
 
 import 'package:weaver_editor/toolbar/editor_toolbar.dart';
 import 'package:weaver_editor/core/delegates/delegates.dart';
@@ -76,6 +77,7 @@ class EditorController with BlockManageDelegate, EditorScrollDelegate {
     BlockType type, {
     int? pos,
     EmbedData? data,
+    BlockOperation? specificOperation,
   }) {
     final BlockBase block = factory.create(blockType: type, embedData: data);
 
@@ -87,11 +89,50 @@ class EditorController with BlockManageDelegate, EditorScrollDelegate {
       blocks.add(block);
     }
 
+    print('block length: ${blocks.length}');
+
     notifier.add(
       BlockOperationEvent(
-        BlockOperation.insert,
+        specificOperation ?? BlockOperation.insert,
         index: pos ?? blocks.length - 1,
       ),
+    );
+  }
+
+  void convertBlock(ClipboardUrl clipboardUrl, String blockId) {
+    final block = getBlockById(blockId);
+    final blockIndex = getBlockIndex(blockId);
+
+    assert(clipboardUrl.hasValidUrl,
+        'Cannot convert to ImageBlock/VideoBlock because no valid URls are provided');
+
+    assert(block.data.type == 'paragraph',
+        'Cannot convert text pasted on TextBlock');
+
+    int effectiveIndex = blockIndex;
+
+    final textData = block.data as TextBlockData;
+    print('block data: ${textData.headNode}');
+
+    if (block.data.isNotEmpty) {
+      effectiveIndex += 1;
+    } else {
+      blocks.remove(block);
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          block.dispose();
+        },
+      );
+    }
+
+    print('block index: $blockIndex, effective index: $effectiveIndex');
+
+    insertBlock(
+      clipboardUrl.type,
+      pos: effectiveIndex,
+      data: clipboardUrl.asEmbedData(),
+      specificOperation:
+          effectiveIndex == blockIndex ? BlockOperation.replace : null,
     );
   }
 
@@ -111,6 +152,7 @@ class EditorController with BlockManageDelegate, EditorScrollDelegate {
 
   Widget buildBlock(
       BuildContext context, int index, Animation<double> animation) {
+    print('building block : $index');
     return FadeTransition(
       key: ValueKey(blocks[index].id),
       opacity: animation,

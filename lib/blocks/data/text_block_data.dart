@@ -24,6 +24,9 @@ class TextBlockData extends BlockData {
     //! headNode = null;
   }
 
+  @override
+  bool get isNotEmpty => headNode?.isNotEmpty ?? false;
+
   bool adoptAlign(TextAlign value) {
     if (align != value) {
       align = value;

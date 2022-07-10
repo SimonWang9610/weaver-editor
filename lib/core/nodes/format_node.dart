@@ -245,6 +245,10 @@ class FormatNode {
 
   bool get canAsHeadNode => range.start == 0;
 
+  bool get isNotEmpty {
+    return range.interval > 0 || (next?.isNotEmpty ?? false);
+  }
+
   @override
   String toString() {
     return '$range -> $next';

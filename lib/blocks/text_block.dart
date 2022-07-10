@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:weaver_editor/core/controller/block_editing_controller.dart';
+import 'package:weaver_editor/core/delegates/selection_control_delegate.dart';
 import 'package:weaver_editor/core/delegates/text_operation_delegate.dart';
 import 'package:weaver_editor/core/nodes/format_node.dart';
 import 'package:weaver_editor/editor.dart';
@@ -40,7 +41,7 @@ class TextBlock<T extends TextBlockData> extends BlockBase<T> {
 
     final String? align = map?['align'];
 
-    final String text = extractText(map?['text'], headNode);
+    final String text = StringUtil.extractText(map?['text'], headNode);
 
     return TextBlock(
       data: TextBlockData(
@@ -73,6 +74,7 @@ class TextBlockState<T extends TextBlockData>
     extends BlockState<T, TextBlockWidget<T>> {
   late final BlockEditingController _controller;
   late final TextOperationDelegate<T> _delegate;
+  TextSelectionControls? selectionControls;
 
   final FocusNode _focus = FocusNode();
 
@@ -107,6 +109,31 @@ class TextBlockState<T extends TextBlockData>
         setState(() {});
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (data.type == 'paragraph') {
+      final platform = Theme.of(context).platform;
+      final editorController = WeaverEditorProvider.of(context);
+
+      selectionControls = PasteControlFactory.platform(
+        platform,
+        blockConverter: (clipboardUrl) {
+          assert(clipboardUrl.hasValidUrl, 'Cannot convert without valid URLs');
+
+          if (clipboardUrl.externalUrl != null) {
+            _delegate.insertLink(clipboardUrl.externalUrl!);
+            return false;
+          } else {
+            editorController.convertBlock(clipboardUrl, data.id);
+            return true;
+          }
+        },
+      );
+    }
   }
 
   @override
@@ -147,6 +174,7 @@ class TextBlockState<T extends TextBlockData>
       controller: _controller,
       focusNode: _focus,
       maxLines: null,
+      selectionControls: selectionControls,
     );
   }
 

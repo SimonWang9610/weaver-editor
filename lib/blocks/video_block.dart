@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:weaver_editor/utils/helper.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'package:weaver_editor/base/block_base.dart';
 import 'package:weaver_editor/models/types.dart';
@@ -38,7 +37,8 @@ class VideoBlock extends BlockBase<VideoBlockData> {
       caption = embedData?.caption;
     } else {
       if ((map['embed'] as String).startsWith('http')) {
-        url = map['embed'];
+        url = StringUtil.extractYoutubeId(map['embed']) ??
+            StringUtil.extractYoutubeId(map['source']);
       } else {
         path = map['embed'];
       }
@@ -57,9 +57,11 @@ class VideoBlock extends BlockBase<VideoBlockData> {
 }
 
 class VideoBlockWidget extends StatefulBlock<VideoBlockData> {
+  final double aspectRatio;
   const VideoBlockWidget({
     Key? key,
     required VideoBlockData data,
+    this.aspectRatio = 16 / 9,
   }) : super(
           key: key,
           data: data,
@@ -70,119 +72,89 @@ class VideoBlockWidget extends StatefulBlock<VideoBlockData> {
 }
 
 class VideoBlockState extends BlockState<VideoBlockData, VideoBlockWidget> {
-  late VideoPlayerController _controller;
-
-  bool _displayControl = true;
-
-  @override
-  VideoBlockData get data => widget.data;
+  late YoutubePlayerController _controller;
+  late PlayerState _playState;
+  late YoutubeMetaData _metaData;
+  bool _readyToPlay = false;
 
   @override
   void initState() {
     super.initState();
 
-    if (data.videoUrl != null) {
-      _controller = VideoPlayerController.network(data.videoUrl!);
-    } else {
-      final file = File(data.videoPath!);
-      _controller = VideoPlayerController.file(file);
-    }
+    _controller = YoutubePlayerController(
+      initialVideoId: widget.data.videoUrl!,
+      flags: const YoutubePlayerFlags(
+        mute: false,
+        autoPlay: false,
+        disableDragSeek: false,
+        loop: false,
+        isLive: false,
+        forceHD: false,
+        enableCaption: true,
+      ),
+    )..addListener(_handleVideoStateChange);
 
-    _controller.initialize();
+    _playState = PlayerState.unknown;
+    _metaData = const YoutubeMetaData();
+  }
+
+  @override
+  void deactivate() {
+    // Pauses video while navigating to next page.
+    _controller.pause();
+    super.deactivate();
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_handleVideoStateChange);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _handleVideoStateChange() {
+    if (_readyToPlay && mounted) {
+      setState(() {
+        _metaData = _controller.value.metaData;
+        _playState = _controller.value.playerState;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
-    setRenderObject(context);
-
-    final width = MediaQuery.of(context).size.width * 0.6;
-
-    return GestureDetector(
-      child: SizedBox(
-        width: width,
-        height: width / _controller.value.aspectRatio,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            VideoPlayer(_controller),
-            VideoProgressIndicator(
-              _controller,
-              allowScrubbing: true,
-              colors: const VideoProgressColors(
-                bufferedColor: Colors.white,
-                playedColor: Colors.grey,
-              ),
+    return YoutubePlayer(
+      key: ValueKey(widget.data.id),
+      controller: _controller,
+      showVideoProgressIndicator: true,
+      progressIndicatorColor: Colors.red,
+      topActions: <Widget>[
+        const SizedBox(width: 8.0),
+        Expanded(
+          child: Text(
+            _controller.metadata.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18.0,
             ),
-            if (_displayControl)
-              Align(
-                alignment: Alignment.center,
-                child: VideoPlayControlWidget(
-                  controller: _controller,
-                  afterPressed: _removeControl,
-                ),
-              )
-          ],
-        ),
-      ),
-      onTap: () {
-        _displayControl = true;
-        setState(() {});
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        )
+      ],
+      bottomActions: [
+        CurrentPosition(),
+        const SizedBox(width: 10.0),
+        ProgressBar(isExpanded: true),
+        const SizedBox(width: 10.0),
+        RemainingDuration(),
+        FullScreenButton(),
+      ],
+      onReady: () {
+        _readyToPlay = true;
       },
     );
-  }
-
-  void _removeControl() {
-    _displayControl = false;
-    setState(() {});
-  }
-}
-
-class VideoPlayControlWidget extends StatelessWidget {
-  final VideoPlayerController controller;
-  final VoidCallback? afterPressed;
-  const VideoPlayControlWidget({
-    Key? key,
-    required this.controller,
-    this.afterPressed,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {
-        if (controller.value.isPlaying) {
-          controller.pause();
-        } else {
-          controller.play();
-        }
-
-        afterPressed?.call();
-      },
-      icon: icon,
-    );
-  }
-
-  Widget get icon {
-    if (controller.value.isPlaying) {
-      return const Icon(
-        Icons.pause_circle_filled_outlined,
-        color: Colors.white,
-        size: 48,
-      );
-    } else {
-      return const Icon(
-        Icons.play_arrow_outlined,
-        color: Colors.white,
-        size: 48,
-      );
-    }
   }
 }
