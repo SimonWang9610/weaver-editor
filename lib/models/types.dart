@@ -120,3 +120,12 @@ class ClipboardUrl {
     return 'ClipboardUrl(image: $imageUrl, youtube: $youtubeUrl, external: $externalUrl)';
   }
 }
+
+enum ListBlockStyle {
+  unordered('unordered'),
+  ordered('ordered');
+
+  final String style;
+
+  const ListBlockStyle(this.style);
+}

@@ -39,6 +39,16 @@ class BlockOptionWidget extends StatelessWidget {
         BlockCreatorButton(
           globalContext: globalContext,
           index: index,
+          type: BlockType.list,
+          child: const Icon(Icons.list),
+          beforePressed: () {
+            WeaverEditorProvider.of(globalContext).detachBlock();
+            overlayRemoveCallback?.call();
+          },
+        ),
+        BlockCreatorButton(
+          globalContext: globalContext,
+          index: index,
           type: BlockType.image,
           child: const Icon(Icons.image),
           beforePressed: () {

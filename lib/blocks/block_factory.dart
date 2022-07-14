@@ -77,6 +77,8 @@ class BlockFactory {
         return TextBlock.create(id, defaultStyle: defaultStyle, map: data);
       case BlockType.header:
         return HeaderBlock.create(id, defaultStyle: defaultStyle, map: data);
+      case BlockType.list:
+        return ListBlock.create(id, map: data);
       case BlockType.image:
         return ImageBlock.create(id, map: data, embedData: embedData);
       case BlockType.video:

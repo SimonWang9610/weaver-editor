@@ -29,6 +29,7 @@ class BlockCreatorButton extends StatelessWidget {
         switch (type) {
           case BlockType.paragraph:
           case BlockType.header:
+          case BlockType.list:
             final editorController =
                 WeaverEditorProvider.of(globalContext ?? context);
 
